@@ -1,0 +1,150 @@
+{
+  "project_info": {
+    "project_number": "754201140792",
+    "project_id": "budgeats-customer",
+    "storage_bucket": "budgeats-customer.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:754201140792:android:31d00da8d2012e3d0910cd",
+        "android_client_info": {
+          "package_name": "nl.budgeats.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "754201140792-9sm2ff4u437k2nsa7sbc93t7gigvunhf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nl.budgeats.app",
+            "certificate_hash": "aef90af260242adc919bee125ebed806c5abb85a"
+          }
+        },
+        {
+          "client_id": "754201140792-acmd92p0fcmq72mojchm13836e02mmam.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nl.budgeats.app",
+            "certificate_hash": "da5a81d79a795028e998ca888b64a826f6e8770a"
+          }
+        },
+        {
+          "client_id": "754201140792-eboovi0uhh2ontkl04l37hb4urrmnfld.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nl.budgeats.app",
+            "certificate_hash": "bf49c10a0f55e9a7374ce30e68a5bc6d62bf74d4"
+          }
+        },
+        {
+          "client_id": "754201140792-fa35augoumddrqhteqkp0adfk4ihgl4k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "nl.budgeats.app",
+            "certificate_hash": "f8a879fce77385f398cc199af958d99086eac7f2"
+          }
+        },
+        {
+          "client_id": "754201140792-ksv82kv11qkilucalp65o2fggnf7pgrk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPjs5Z_NJpcnhl4VdWKEia8sJGzjy0MGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "754201140792-ksv82kv11qkilucalp65o2fggnf7pgrk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "754201140792-55e3uiib0epb3mdd46ddvq3ie74i1jgc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "nl.budgeats.driver"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:754201140792:android:7225443d72a8dba80910cd",
+        "android_client_info": {
+          "package_name": "nl.budgeats.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "754201140792-ksv82kv11qkilucalp65o2fggnf7pgrk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPjs5Z_NJpcnhl4VdWKEia8sJGzjy0MGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "754201140792-ksv82kv11qkilucalp65o2fggnf7pgrk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "754201140792-55e3uiib0epb3mdd46ddvq3ie74i1jgc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "nl.budgeats.driver"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:754201140792:android:8b1fc1b629f0e9cc0910cd",
+        "android_client_info": {
+          "package_name": "nl.budgeats.vendors"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "754201140792-ksv82kv11qkilucalp65o2fggnf7pgrk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPjs5Z_NJpcnhl4VdWKEia8sJGzjy0MGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "754201140792-ksv82kv11qkilucalp65o2fggnf7pgrk.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "754201140792-55e3uiib0epb3mdd46ddvq3ie74i1jgc.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "nl.budgeats.driver"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

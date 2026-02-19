@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>754201140792-55e3uiib0epb3mdd46ddvq3ie74i1jgc.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.754201140792-55e3uiib0epb3mdd46ddvq3ie74i1jgc</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>754201140792-9sm2ff4u437k2nsa7sbc93t7gigvunhf.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBWgZE1HtO0FqY0r_bpPqAfHEvKxTjg9CA</string>
+	<key>GCM_SENDER_ID</key>
+	<string>754201140792</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>nl.budgeats.driver</string>
+	<key>PROJECT_ID</key>
+	<string>budgeats-customer</string>
+	<key>STORAGE_BUCKET</key>
+	<string>budgeats-customer.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:754201140792:ios:c62f681f182af25d0910cd</string>
+</dict>
+</plist>
