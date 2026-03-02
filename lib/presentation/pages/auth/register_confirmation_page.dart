@@ -1,9 +1,9 @@
 // ignore_for_file: unused_result
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:sms_autofill/sms_autofill.dart';
 import 'package:driver/infrastructure/models/models.dart';
 import 'package:driver/presentation/component/components.dart';
 
@@ -114,36 +114,12 @@ class _RegisterConfirmationPageState
                           ),
                         ),
                         40.verticalSpace,
-                        SizedBox(
-                          height: 64,
-                          child: PinFieldAutoFill(
-                            codeLength: 6,
-                            currentCode: state.confirmCode,
-                            onCodeChanged: notifier.setCode,
-                            cursor: Cursor(
-                              width: 1,
-                              height: 24,
-                              color: isDarkMode ? Style.white : Style.black,
-                              enabled: true,
-                            ),
-                            decoration: BoxLooseDecoration(
-                              gapSpace: 10.r,
-                              textStyle: Style.interNormal(
-                                size: 15.sp,
-                                color: isDarkMode ? Style.white : Style.black,
-                              ),
-                              bgColorBuilder: FixedColorBuilder(
-                                isDarkMode ? Style.black : Style.transparent,
-                              ),
-                              strokeColorBuilder: FixedColorBuilder(
-                                state.isCodeError
-                                    ? Style.redColor
-                                    : isDarkMode
-                                        ? Style.borderColor
-                                        : Style.black,
-                              ),
-                            ),
-                          ),
+                        _OtpInput(
+                          codeLength: 6,
+                          currentCode: state.confirmCode,
+                          onCodeChanged: notifier.setCode,
+                          isDarkMode: isDarkMode,
+                          isError: state.isCodeError,
                         ),
                       ],
                     ),
@@ -217,6 +193,136 @@ class _RegisterConfirmationPageState
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Pure-Flutter OTP input that replaces the removed sms_autofill dependency.
+class _OtpInput extends StatefulWidget {
+  final int codeLength;
+  final String currentCode;
+  final ValueChanged<String> onCodeChanged;
+  final bool isDarkMode;
+  final bool isError;
+
+  const _OtpInput({
+    required this.codeLength,
+    required this.currentCode,
+    required this.onCodeChanged,
+    required this.isDarkMode,
+    this.isError = false,
+  });
+
+  @override
+  State<_OtpInput> createState() => _OtpInputState();
+}
+
+class _OtpInputState extends State<_OtpInput> {
+  late final List<TextEditingController> _controllers;
+  late final List<FocusNode> _focusNodes;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(widget.codeLength, (_) => TextEditingController());
+    _focusNodes = List.generate(widget.codeLength, (_) => FocusNode());
+
+    // Pre-fill if there's already a code
+    for (int i = 0; i < widget.currentCode.length && i < widget.codeLength; i++) {
+      _controllers[i].text = widget.currentCode[i];
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final c in _controllers) {
+      c.dispose();
+    }
+    for (final f in _focusNodes) {
+      f.dispose();
+    }
+    super.dispose();
+  }
+
+  String _collectCode() {
+    return _controllers.map((c) => c.text).join();
+  }
+
+  void _onChanged(int index, String value) {
+    if (value.length > 1) {
+      // Handle paste — distribute characters across fields
+      final chars = value.split('');
+      for (int i = 0; i < chars.length && (index + i) < widget.codeLength; i++) {
+        _controllers[index + i].text = chars[i];
+      }
+      final nextIndex = (index + chars.length).clamp(0, widget.codeLength - 1);
+      _focusNodes[nextIndex].requestFocus();
+    } else if (value.isNotEmpty) {
+      // Move to next field
+      if (index < widget.codeLength - 1) {
+        _focusNodes[index + 1].requestFocus();
+      }
+    }
+    widget.onCodeChanged(_collectCode());
+  }
+
+  void _onKeyEvent(int index, KeyEvent event) {
+    if (event is KeyDownEvent &&
+        event.logicalKey == LogicalKeyboardKey.backspace &&
+        _controllers[index].text.isEmpty &&
+        index > 0) {
+      _controllers[index - 1].clear();
+      _focusNodes[index - 1].requestFocus();
+      widget.onCodeChanged(_collectCode());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor = widget.isError
+        ? Style.redColor
+        : widget.isDarkMode
+            ? Style.borderColor
+            : Style.black;
+    final bgColor = widget.isDarkMode ? Style.black : Style.transparent;
+    final textColor = widget.isDarkMode ? Style.white : Style.black;
+
+    return SizedBox(
+      height: 64,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(widget.codeLength, (i) {
+          return Container(
+            width: 44.r,
+            height: 56.r,
+            margin: EdgeInsets.symmetric(horizontal: 5.r),
+            decoration: BoxDecoration(
+              color: bgColor,
+              border: Border.all(color: borderColor, width: 1.5),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: KeyboardListener(
+              focusNode: FocusNode(), // wrapper node for key events
+              onKeyEvent: (event) => _onKeyEvent(i, event),
+              child: TextField(
+                controller: _controllers[i],
+                focusNode: _focusNodes[i],
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                maxLength: 2, // allow 2 so paste detection works
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                style: Style.interNormal(size: 15.sp, color: textColor),
+                decoration: const InputDecoration(
+                  counterText: '',
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                onChanged: (val) => _onChanged(i, val),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }
