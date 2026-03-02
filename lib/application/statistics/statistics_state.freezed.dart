@@ -23,9 +23,7 @@ mixin _$StatisticsState {
   List<StatisticsOrder> get listOfOrder => throw _privateConstructorUsedError;
   StatisticsIncomeResponse? get countData => throw _privateConstructorUsedError;
 
-  /// Create a copy of StatisticsState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $StatisticsStateCopyWith<StatisticsState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -54,8 +52,6 @@ class _$StatisticsStateCopyWithImpl<$Res, $Val extends StatisticsState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of StatisticsState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -114,8 +110,6 @@ class __$$StatisticsStateImplCopyWithImpl<$Res>
       _$StatisticsStateImpl _value, $Res Function(_$StatisticsStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of StatisticsState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -220,9 +214,7 @@ class _$StatisticsStateImpl extends _StatisticsState {
       const DeepCollectionEquality().hash(_listOfOrder),
       countData);
 
-  /// Create a copy of StatisticsState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$StatisticsStateImplCopyWith<_$StatisticsStateImpl> get copyWith =>
@@ -249,11 +241,8 @@ abstract class _StatisticsState extends StatisticsState {
   List<StatisticsOrder> get listOfOrder;
   @override
   StatisticsIncomeResponse? get countData;
-
-  /// Create a copy of StatisticsState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$StatisticsStateImplCopyWith<_$StatisticsStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

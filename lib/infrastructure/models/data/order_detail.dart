@@ -134,6 +134,16 @@ class OrderDetailData {
     review = json['review'];
   }
 
+  bool get hasAgeRestrictedItems {
+    if (details == null) return false;
+    for (final detail in details!) {
+      if (detail.stock?.product?.isAgeRestricted ?? false) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;
@@ -632,6 +642,24 @@ class Group {
   }
 }
 
+class ProductCategory {
+  int? id;
+  String? uuid;
+  String? keywords;
+
+  ProductCategory({this.id, this.uuid, this.keywords});
+
+  ProductCategory.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    uuid = json['uuid'];
+    keywords = json['keywords'];
+  }
+
+  bool get ageRestricted =>
+      keywords?.split(',').map((e) => e.trim()).contains('age_restricted') ??
+      false;
+}
+
 class Product {
   int? id;
   String? uuid;
@@ -652,6 +680,7 @@ class Product {
   Translation? translation;
   Unit? unit;
   List<String>? locales;
+  ProductCategory? category;
 
   Product({this.id,
     this.uuid,
@@ -670,7 +699,8 @@ class Product {
     this.updatedAt,
     this.translation,
     this.unit,
-    this.locales});
+    this.locales,
+    this.category});
 
   Product.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -695,7 +725,12 @@ class Product {
     unit = json['unit'] != null
         ? Unit.fromJson(json['unit'])
         : null;
+    category = json['category'] != null
+        ? ProductCategory.fromJson(json['category'])
+        : null;
   }
+
+  bool get isAgeRestricted => category?.ageRestricted ?? false;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};

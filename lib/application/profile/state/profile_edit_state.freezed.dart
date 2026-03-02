@@ -32,9 +32,7 @@ mixin _$ProfileEditState {
   String get password => throw _privateConstructorUsedError;
   String get confirmPassword => throw _privateConstructorUsedError;
 
-  /// Create a copy of ProfileEditState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $ProfileEditStateCopyWith<ProfileEditState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -73,8 +71,6 @@ class _$ProfileEditStateCopyWithImpl<$Res, $Val extends ProfileEditState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ProfileEditState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -193,8 +189,6 @@ class __$$ProfileEditStateImplCopyWithImpl<$Res>
       $Res Function(_$ProfileEditStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProfileEditState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -405,9 +399,7 @@ class _$ProfileEditStateImpl extends _ProfileEditState {
       password,
       confirmPassword);
 
-  /// Create a copy of ProfileEditState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$ProfileEditStateImplCopyWith<_$ProfileEditStateImpl> get copyWith =>
@@ -464,11 +456,8 @@ abstract class _ProfileEditState extends ProfileEditState {
   String get password;
   @override
   String get confirmPassword;
-
-  /// Create a copy of ProfileEditState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$ProfileEditStateImplCopyWith<_$ProfileEditStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -23,9 +23,7 @@ mixin _$NotificationState {
   bool get isReadAllLoading => throw _privateConstructorUsedError;
   bool get isAllNotificationsLoading => throw _privateConstructorUsedError;
 
-  /// Create a copy of NotificationState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $NotificationStateCopyWith<NotificationState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -53,8 +51,6 @@ class _$NotificationStateCopyWithImpl<$Res, $Val extends NotificationState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of NotificationState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -107,8 +103,6 @@ class __$$NotificationStateImplCopyWithImpl<$Res>
       $Res Function(_$NotificationStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of NotificationState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -197,9 +191,7 @@ class _$NotificationStateImpl extends _NotificationState {
       isReadAllLoading,
       isAllNotificationsLoading);
 
-  /// Create a copy of NotificationState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$NotificationStateImplCopyWith<_$NotificationStateImpl> get copyWith =>
@@ -223,11 +215,8 @@ abstract class _NotificationState extends NotificationState {
   bool get isReadAllLoading;
   @override
   bool get isAllNotificationsLoading;
-
-  /// Create a copy of NotificationState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$NotificationStateImplCopyWith<_$NotificationStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

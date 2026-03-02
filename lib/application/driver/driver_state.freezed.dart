@@ -18,9 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$DriverState {
   DeliveryResponse? get driverData => throw _privateConstructorUsedError;
 
-  /// Create a copy of DriverState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $DriverStateCopyWith<DriverState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -44,8 +42,6 @@ class _$DriverStateCopyWithImpl<$Res, $Val extends DriverState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of DriverState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -79,8 +75,6 @@ class __$$DriverStateImplCopyWithImpl<$Res>
       _$DriverStateImpl _value, $Res Function(_$DriverStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of DriverState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -120,9 +114,7 @@ class _$DriverStateImpl extends _DriverState {
   @override
   int get hashCode => Object.hash(runtimeType, driverData);
 
-  /// Create a copy of DriverState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$DriverStateImplCopyWith<_$DriverStateImpl> get copyWith =>
@@ -136,11 +128,8 @@ abstract class _DriverState extends DriverState {
 
   @override
   DeliveryResponse? get driverData;
-
-  /// Create a copy of DriverState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$DriverStateImplCopyWith<_$DriverStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

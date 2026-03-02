@@ -22,9 +22,7 @@ mixin _$ProfileSettingsState {
   RequestModelData? get requestData => throw _privateConstructorUsedError;
   StatisticsResponse? get statistics => throw _privateConstructorUsedError;
 
-  /// Create a copy of ProfileSettingsState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $ProfileSettingsStateCopyWith<ProfileSettingsState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -54,8 +52,6 @@ class _$ProfileSettingsStateCopyWithImpl<$Res,
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ProfileSettingsState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -114,8 +110,6 @@ class __$$ProfileSettingsStateImplCopyWithImpl<$Res>
       $Res Function(_$ProfileSettingsStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProfileSettingsState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -200,9 +194,7 @@ class _$ProfileSettingsStateImpl extends _ProfileSettingsState {
   int get hashCode => Object.hash(runtimeType, isLoading, isStatisticLoading,
       userData, requestData, statistics);
 
-  /// Create a copy of ProfileSettingsState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$ProfileSettingsStateImplCopyWith<_$ProfileSettingsStateImpl>
@@ -230,11 +222,8 @@ abstract class _ProfileSettingsState extends ProfileSettingsState {
   RequestModelData? get requestData;
   @override
   StatisticsResponse? get statistics;
-
-  /// Create a copy of ProfileSettingsState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$ProfileSettingsStateImplCopyWith<_$ProfileSettingsStateImpl>
       get copyWith => throw _privateConstructorUsedError;
 }

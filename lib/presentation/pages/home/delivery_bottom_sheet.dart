@@ -7,6 +7,7 @@ import 'package:driver/application/providers.dart';
 import 'package:driver/infrastructure/services/services.dart';
 import 'package:driver/presentation/component/components.dart';
 import 'package:driver/presentation/styles/style.dart';
+import 'widgets/age_verification_dialog.dart';
 import 'widgets/approve_dialog.dart';
 import 'widgets/foods_page.dart';
 import 'widgets/rate_customer.dart';
@@ -25,6 +26,35 @@ class _DeliverBottomSheetScreenState extends State<DeliverBottomSheetScreen> {
   TextEditingController noteCon = TextEditingController();
 
   final formKey = GlobalKey<FormState>();
+
+  void _proceedWithDelivery(BuildContext context, WidgetRef ref) {
+    AppHelpers.openDialogImagePicker(
+      context: context,
+      onSuccess: (path) async {
+        if (context.mounted) {
+          if (path.isNotEmpty) {
+            ref.read(homeProvider.notifier).uploadImage(
+              context: context,
+              orderId: widget.order.id,
+              path: path,
+            );
+          }
+          ref.read(homeProvider.notifier).deliveredFinish(
+            context: context,
+            orderId: widget.order.id,
+          );
+          Navigator.pop(context);
+          AppHelpers.showCustomModalBottomSheet(
+            context: context,
+            modal: RateCustomer(
+              order: widget.order,
+            ),
+            isDarkMode: false,
+          );
+        }
+      },
+    );
+  }
 
   @override
   void dispose() {
@@ -123,34 +153,25 @@ class _DeliverBottomSheetScreenState extends State<DeliverBottomSheetScreen> {
                                     order: widget.order,
                                   ));
                             } else {
-                              AppHelpers.openDialogImagePicker(
-                                context: context,
-                                onSuccess: (path) async {
-
-                                  if (context.mounted) {
-                                    if(path.isNotEmpty){
-                                      ref.read(homeProvider.notifier).uploadImage(
-                                        context: context,
-                                        orderId: widget.order.id,
-                                        path: path,
+                              if (widget.order.hasAgeRestrictedItems) {
+                                AppHelpers.showAlertDialog(
+                                  context: context,
+                                  child: AgeVerificationDialog(
+                                    onVerified: () {
+                                      _proceedWithDelivery(context, ref);
+                                    },
+                                    onNotVerified: () {
+                                      AppHelpers.showCheckTopSnackBarInfo(
+                                        context,
+                                        AppHelpers.getTranslation(
+                                            TrKeys.customerIdNotVerified),
                                       );
-                                    }
-                                    ref
-                                        .read(homeProvider.notifier)
-                                        .deliveredFinish(
-                                      context: context,
-                                      orderId: widget.order.id,
-                                    );
-                                    Navigator.pop(context);
-                                    AppHelpers.showCustomModalBottomSheet(
-                                        context: context,
-                                        modal: RateCustomer(
-                                          order: widget.order,
-                                        ),
-                                        isDarkMode: false);
-                                  }
-                                },
-                              );
+                                    },
+                                  ),
+                                );
+                              } else {
+                                _proceedWithDelivery(context, ref);
+                              }
                             }
                           },
                         ),

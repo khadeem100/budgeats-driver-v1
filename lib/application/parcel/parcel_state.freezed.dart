@@ -29,9 +29,7 @@ mixin _$ParcelState {
   int get deliveryTime => throw _privateConstructorUsedError;
   int get deliveryType => throw _privateConstructorUsedError;
 
-  /// Create a copy of ParcelState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $ParcelStateCopyWith<ParcelState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -67,8 +65,6 @@ class _$ParcelStateCopyWithImpl<$Res, $Val extends ParcelState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ParcelState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -169,8 +165,6 @@ class __$$ParcelStateImplCopyWithImpl<$Res>
       _$ParcelStateImpl _value, $Res Function(_$ParcelStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ParcelState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -367,9 +361,7 @@ class _$ParcelStateImpl extends _ParcelState {
       deliveryTime,
       deliveryType);
 
-  /// Create a copy of ParcelState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$ParcelStateImplCopyWith<_$ParcelStateImpl> get copyWith =>
@@ -416,11 +408,8 @@ abstract class _ParcelState extends ParcelState {
   int get deliveryTime;
   @override
   int get deliveryType;
-
-  /// Create a copy of ParcelState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$ParcelStateImplCopyWith<_$ParcelStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

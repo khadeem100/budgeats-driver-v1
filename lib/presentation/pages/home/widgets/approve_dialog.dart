@@ -86,6 +86,9 @@ class ApproveOrderDialog extends StatelessWidget {
                                     parcel?.addressTo?.longitude ?? 0,
                                   ),
                                   icon: await image.resizeAndCircle("", 100),
+                                  infoWindow: const InfoWindow(
+                                    title: "Customer",
+                                  ),
                                 ),
                               );
                         } else {
@@ -123,6 +126,10 @@ class ApproveOrderDialog extends StatelessWidget {
                                   ),
                                   icon: await image.resizeAndCircle(
                                       order?.user?.img ?? "", 100),
+                                  infoWindow: InfoWindow(
+                                    title: order?.user?.firstname ?? "Customer",
+                                    snippet: order?.address?.address,
+                                  ),
                                 ),
                               );
                         }

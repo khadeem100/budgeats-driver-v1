@@ -423,11 +423,13 @@ class Category {
     int? id,
     String? uuid,
     int? parentId,
+    String? keywords,
     Translation? translation,
   }) {
     _id = id;
     _uuid = uuid;
     _parentId = parentId;
+    _keywords = keywords;
     _translation = translation;
   }
 
@@ -435,6 +437,7 @@ class Category {
     _id = json['id'];
     _uuid = json['uuid'];
     _parentId = json['parent_id'];
+    _keywords = json['keywords'];
     _translation = json['translation'] != null
         ? Translation.fromJson(json['translation'])
         : null;
@@ -443,6 +446,7 @@ class Category {
   int? _id;
   String? _uuid;
   int? _parentId;
+  String? _keywords;
   Translation? _translation;
 
   Category copyWith({
@@ -464,13 +468,20 @@ class Category {
 
   int? get parentId => _parentId;
 
+  String? get keywords => _keywords;
+
   Translation? get translation => _translation;
+
+  bool get ageRestricted =>
+      _keywords?.split(',').map((e) => e.trim()).contains('age_restricted') ??
+      false;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
     map['id'] = _id;
     map['uuid'] = _uuid;
     map['parent_id'] = _parentId;
+    map['keywords'] = _keywords;
     if (_translation != null) {
       map['translation'] = _translation?.toJson();
     }

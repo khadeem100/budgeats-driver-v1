@@ -18,9 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$StoryState {
   int get currentIndex => throw _privateConstructorUsedError;
 
-  /// Create a copy of StoryState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $StoryStateCopyWith<StoryState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -44,8 +42,6 @@ class _$StoryStateCopyWithImpl<$Res, $Val extends StoryState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of StoryState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -79,8 +75,6 @@ class __$$StoryStateImplCopyWithImpl<$Res>
       _$StoryStateImpl _value, $Res Function(_$StoryStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of StoryState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -121,9 +115,7 @@ class _$StoryStateImpl extends _StoryState {
   @override
   int get hashCode => Object.hash(runtimeType, currentIndex);
 
-  /// Create a copy of StoryState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$StoryStateImplCopyWith<_$StoryStateImpl> get copyWith =>
@@ -136,11 +128,8 @@ abstract class _StoryState extends StoryState {
 
   @override
   int get currentIndex;
-
-  /// Create a copy of StoryState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   _$$StoryStateImplCopyWith<_$StoryStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

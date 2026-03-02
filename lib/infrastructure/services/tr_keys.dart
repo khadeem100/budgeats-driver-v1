@@ -253,4 +253,11 @@ class TrKeys {
   static const String passwordShouldContainMinimum6Characters =
       'password_should_contain_minimum_6_characters';
   static const String demoLoginPassword = 'demo_login_password';
+
+  // Age verification
+  static const String ageVerificationRequired = 'age.verification.required';
+  static const String ageVerificationConfirm = 'age.verification.confirm';
+  static const String ageVerificationMessage = 'this.order.contains.age.restricted.items.please.verify.customer.id.before.delivering';
+  static const String customerIdVerified = 'customer.id.verified.18.plus';
+  static const String customerIdNotVerified = 'customer.id.not.verified';
 }

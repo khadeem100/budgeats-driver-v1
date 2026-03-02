@@ -19,6 +19,8 @@ class HomeState with _$HomeState {
     @Default(null) ParcelOrder? parcelDetail,
     @Default({}) Set<Polygon> polygon,
     @Default([]) List<LatLng> deliveryZone,
+    @Default(null) LatLng? destinationLatLng,
+    @Default(null) Marker? destinationMarker,
   }) = _HomeState;
 
   const HomeState._();

@@ -40,6 +40,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   BitmapDescriptor myIcon = BitmapDescriptor.defaultMarker;
   OrderDetailData? push;
   Timer? timer;
+  Timer? routeUpdateTimer;
   LatLng latLng = LatLng(
     (LocalStorage.getAddressSelected()?.latitude ?? AppConstants.demoLatitude),
     (LocalStorage.getAddressSelected()?.longitude ??
@@ -48,6 +49,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Position? currentLocation;
   dynamic check;
   final _delayed = Delayed(milliseconds: 36000);
+  StreamSubscription<Position>? _positionSubscription;
 
   Future<void> setCustomMarkerIcon() async {
     final Uint8List markerMyIcon =
@@ -162,6 +164,23 @@ class _HomePageState extends ConsumerState<HomePage> {
             isOnline: (LocalStorage.getOnline()),
           );
     });
+    // Live route update every 15 seconds when there's an active delivery
+    routeUpdateTimer = Timer.periodic(const Duration(seconds: 15), (Timer t) {
+      final state = ref.read(homeProvider);
+      if (state.isGoRestaurant || state.isGoUser) {
+        ref.read(homeProvider.notifier).updateLiveRoute(
+              driverPosition: latLng,
+            );
+        // Follow driver position on the map during active delivery
+        if (googleMapController != null) {
+          googleMapController!.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(target: latLng, zoom: 16, tilt: 45, bearing: currentLocation?.heading ?? 0),
+            ),
+          );
+        }
+      }
+    });
   }
 
   void getCurrentLocation() async {
@@ -173,7 +192,12 @@ class _HomePageState extends ConsumerState<HomePage> {
             currentLocation?.longitude ?? latLng.longitude);
       },
     );
-    _geolocatorPlatform.getPositionStream().listen(
+    _positionSubscription = _geolocatorPlatform.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10, // Update every 10 meters
+      ),
+    ).listen(
       (newLoc) {
         currentLocation = newLoc;
         latLng = LatLng(currentLocation?.latitude ?? latLng.latitude,
@@ -183,6 +207,10 @@ class _HomePageState extends ConsumerState<HomePage> {
               currentLocation?.latitude ?? latLng.latitude,
               currentLocation?.longitude ?? latLng.longitude));
         });
+        // Update driver marker position in real-time during delivery
+        if (mounted) {
+          setState(() {});
+        }
       },
     );
   }
@@ -221,8 +249,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                   icon: await image.resizeAndCircle(
                       push?.shop?.logoImg ?? "", 120),
+                  infoWindow: InfoWindow(
+                    title: push?.shop?.translation?.title ?? "Restaurant",
+                  ),
                 ),
               );
+          // Zoom camera to show both driver and destination
+          _fitMapToRoute();
         });
   }
 
@@ -262,6 +295,15 @@ class _HomePageState extends ConsumerState<HomePage> {
       });
     }
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    routeUpdateTimer?.cancel();
+    _positionSubscription?.cancel();
+    googleMapController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -372,6 +414,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                           getCurrentLocation();
                         } else {
                           timer?.cancel();
+                          routeUpdateTimer?.cancel();
+                          _positionSubscription?.cancel();
                           Workmanager().cancelAll();
                         }
                         ref
@@ -394,12 +438,18 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  /// Thuisbezorgd-style green color for delivery waypoints
+  static const Color _deliveryGreen = Color(0xFF00C853);
+
   Widget _map(BuildContext context, WidgetRef ref) {
+    final homeState = ref.watch(homeProvider);
+    final isDeliveryActive = homeState.isGoRestaurant || homeState.isGoUser;
     return SizedBox(
       width: MediaQuery.sizeOf(context).width,
       height: MediaQuery.sizeOf(context).height,
       child: GoogleMap(
         myLocationButtonEnabled: false,
+        myLocationEnabled: isDeliveryActive,
         initialCameraPosition: CameraPosition(
           bearing: 0,
           target: LatLng(
@@ -408,7 +458,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             (LocalStorage.getAddressSelected()?.longitude ??
                 AppConstants.demoLongitude),
           ),
-          tilt: 0,
+          tilt: isDeliveryActive ? 45 : 0,
           zoom: 17,
         ),
         markers: {
@@ -417,29 +467,35 @@ class _HomePageState extends ConsumerState<HomePage> {
             icon: myIcon,
             position: LatLng(currentLocation?.latitude ?? latLng.latitude,
                 currentLocation?.longitude ?? latLng.longitude),
+            rotation: currentLocation?.heading ?? 0,
+            anchor: const Offset(0.5, 0.5),
+            flat: true,
           ),
-          ...ref.watch(homeProvider).markers
+          ...homeState.markers
         },
-        polygons: ref.watch(homeProvider).polygon,
-        polylines: ref.watch(homeProvider).isGoRestaurant ||
-                ref.watch(homeProvider).isGoUser
+        polygons: homeState.polygon,
+        polylines: isDeliveryActive
             ? {
-                Polyline(
-                  polylineId: const PolylineId("startLocation"),
-                  points: ref.watch(homeProvider).endPolylineCoordinates,
-                  color: Style.primaryColor.withOpacity(0.4),
-                  width: 6,
-                ),
-                Polyline(
-                  polylineId: const PolylineId("market"),
-                  points: ref.watch(homeProvider).polylineCoordinates,
-                  color: Style.primaryColor,
-                  width: 6,
-                ),
+                if (homeState.endPolylineCoordinates.isNotEmpty)
+                  Polyline(
+                    polylineId: const PolylineId("startLocation"),
+                    points: homeState.endPolylineCoordinates,
+                    color: _deliveryGreen.withOpacity(0.3),
+                    width: 6,
+                  ),
+                if (homeState.polylineCoordinates.isNotEmpty)
+                  Polyline(
+                    polylineId: const PolylineId("market"),
+                    points: homeState.polylineCoordinates,
+                    color: _deliveryGreen,
+                    width: 6,
+                    patterns: [PatternItem.dot, PatternItem.gap(10)],
+                  ),
               }
             : {},
-        mapToolbarEnabled: true,
+        mapToolbarEnabled: false,
         zoomControlsEnabled: false,
+        compassEnabled: isDeliveryActive,
         onMapCreated: (controller) {
           googleMapController = controller;
         },
@@ -454,12 +510,37 @@ class _HomePageState extends ConsumerState<HomePage> {
           });
         },
         padding: EdgeInsets.only(
-          bottom: ref.watch(homeProvider).isGoRestaurant
+          bottom: homeState.isGoRestaurant
               ? 90.h
-              : ref.watch(homeProvider).isScrolling
+              : homeState.isScrolling
                   ? 60.h
                   : 330.h,
         ),
+      ),
+    );
+  }
+
+  /// Fit the map camera to show both the driver and destination markers
+  void _fitMapToRoute() {
+    if (googleMapController == null) return;
+    final state = ref.read(homeProvider);
+    final coords = [
+      LatLng(currentLocation?.latitude ?? latLng.latitude,
+          currentLocation?.longitude ?? latLng.longitude),
+      ...state.markers.map((m) => m.position),
+    ];
+    if (coords.length < 2) return;
+    double minLat = coords.map((e) => e.latitude).reduce((a, b) => a < b ? a : b);
+    double maxLat = coords.map((e) => e.latitude).reduce((a, b) => a > b ? a : b);
+    double minLng = coords.map((e) => e.longitude).reduce((a, b) => a < b ? a : b);
+    double maxLng = coords.map((e) => e.longitude).reduce((a, b) => a > b ? a : b);
+    googleMapController!.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(minLat, minLng),
+          northeast: LatLng(maxLat, maxLng),
+        ),
+        80,
       ),
     );
   }

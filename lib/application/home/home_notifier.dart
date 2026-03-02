@@ -14,6 +14,39 @@ class HomeNotifier extends StateNotifier<HomeState> {
   HomeNotifier() : super(const HomeState());
   final ImageCropperMarker image = ImageCropperMarker();
 
+  /// Update the live route from the driver's current position to the destination.
+  /// Called periodically (every 10s) while there's an active delivery.
+  Future<void> updateLiveRoute({
+    required LatLng driverPosition,
+  }) async {
+    final dest = state.destinationLatLng;
+    final marker = state.destinationMarker;
+    if (dest == null || marker == null) return;
+    if (!state.isGoRestaurant && !state.isGoUser) return;
+    if (!(await AppConnectivity.connectivity())) return;
+
+    final response = await drawRepository.getRouting(
+      start: driverPosition,
+      end: dest,
+    );
+    response.when(
+      success: (data) {
+        List<LatLng> list = [];
+        List ls = data.features[0].geometry.coordinates;
+        for (int i = 0; i < ls.length; i++) {
+          list.add(LatLng(ls[i][1], ls[i][0]));
+        }
+        state = state.copyWith(
+          polylineCoordinates: list,
+          markers: {marker},
+        );
+      },
+      failure: (failure, status) {
+        debugPrint('==> live route update failure: $failure');
+      },
+    );
+  }
+
   fetchDeliveryZone({bool isFetch = false}) async {
     if (isFetch) {
       final response = await userRepository.getDeliveryZone();
@@ -65,8 +98,13 @@ class HomeNotifier extends StateNotifier<HomeState> {
     required Marker market,
   }) async {
     if (await AppConnectivity.connectivity()) {
-      state =
-          state.copyWith(polylineCoordinates: [], markers: {}, isLoading: true);
+      state = state.copyWith(
+        polylineCoordinates: [],
+        markers: {},
+        isLoading: true,
+        destinationLatLng: end,
+        destinationMarker: market,
+      );
       final response = await drawRepository.getRouting(start: start, end: end);
       response.when(
         success: (data) {
@@ -79,9 +117,6 @@ class HomeNotifier extends StateNotifier<HomeState> {
               polylineCoordinates: list, markers: {market}, isLoading: false);
         },
         failure: (failure, status) {
-          // if(status==400){
-          //   AppHelpers.showCheckTopSnackBar(context, TrKeys.moreDistance);
-          // }
           state = state
               .copyWith(polylineCoordinates: [], markers: {}, isLoading: false);
         },
@@ -367,6 +402,8 @@ class HomeNotifier extends StateNotifier<HomeState> {
       polylineCoordinates: [],
       endPolylineCoordinates: [],
       markers: {},
+      destinationLatLng: null,
+      destinationMarker: null,
     );
     if (await AppConnectivity.connectivity()) {
       parcelRepository.updateParcel(parcelId ?? 0, "delivered");
@@ -385,6 +422,8 @@ class HomeNotifier extends StateNotifier<HomeState> {
       polylineCoordinates: [],
       endPolylineCoordinates: [],
       markers: {},
+      destinationLatLng: null,
+      destinationMarker: null,
     );
     if (await AppConnectivity.connectivity()) {
       orderRepository.updateOrder(orderId ?? 0, "delivered");
@@ -408,6 +447,8 @@ class HomeNotifier extends StateNotifier<HomeState> {
         polylineCoordinates: [],
         endPolylineCoordinates: [],
         markers: {},
+        destinationLatLng: null,
+        destinationMarker: null,
       );
     } else {
       if (context.mounted) {

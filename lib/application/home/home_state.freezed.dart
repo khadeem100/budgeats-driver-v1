@@ -27,10 +27,10 @@ mixin _$HomeState {
   ParcelOrder? get parcelDetail => throw _privateConstructorUsedError;
   Set<Polygon> get polygon => throw _privateConstructorUsedError;
   List<LatLng> get deliveryZone => throw _privateConstructorUsedError;
+  LatLng? get destinationLatLng => throw _privateConstructorUsedError;
+  Marker? get destinationMarker => throw _privateConstructorUsedError;
 
-  /// Create a copy of HomeState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   $HomeStateCopyWith<HomeState> get copyWith =>
       throw _privateConstructorUsedError;
 }
@@ -51,7 +51,9 @@ abstract class $HomeStateCopyWith<$Res> {
       OrderDetailData? orderDetail,
       ParcelOrder? parcelDetail,
       Set<Polygon> polygon,
-      List<LatLng> deliveryZone});
+      List<LatLng> deliveryZone,
+      LatLng? destinationLatLng,
+      Marker? destinationMarker});
 }
 
 /// @nodoc
@@ -64,8 +66,6 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of HomeState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -80,6 +80,8 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
     Object? parcelDetail = freezed,
     Object? polygon = null,
     Object? deliveryZone = null,
+    Object? destinationLatLng = freezed,
+    Object? destinationMarker = freezed,
   }) {
     return _then(_value.copyWith(
       isLoading: null == isLoading
@@ -126,6 +128,14 @@ class _$HomeStateCopyWithImpl<$Res, $Val extends HomeState>
           ? _value.deliveryZone
           : deliveryZone // ignore: cast_nullable_to_non_nullable
               as List<LatLng>,
+      destinationLatLng: freezed == destinationLatLng
+          ? _value.destinationLatLng
+          : destinationLatLng // ignore: cast_nullable_to_non_nullable
+              as LatLng?,
+      destinationMarker: freezed == destinationMarker
+          ? _value.destinationMarker
+          : destinationMarker // ignore: cast_nullable_to_non_nullable
+              as Marker?,
     ) as $Val);
   }
 }
@@ -149,7 +159,9 @@ abstract class _$$HomeStateImplCopyWith<$Res>
       OrderDetailData? orderDetail,
       ParcelOrder? parcelDetail,
       Set<Polygon> polygon,
-      List<LatLng> deliveryZone});
+      List<LatLng> deliveryZone,
+      LatLng? destinationLatLng,
+      Marker? destinationMarker});
 }
 
 /// @nodoc
@@ -160,8 +172,6 @@ class __$$HomeStateImplCopyWithImpl<$Res>
       _$HomeStateImpl _value, $Res Function(_$HomeStateImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of HomeState
-  /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
@@ -176,6 +186,8 @@ class __$$HomeStateImplCopyWithImpl<$Res>
     Object? parcelDetail = freezed,
     Object? polygon = null,
     Object? deliveryZone = null,
+    Object? destinationLatLng = freezed,
+    Object? destinationMarker = freezed,
   }) {
     return _then(_$HomeStateImpl(
       isLoading: null == isLoading
@@ -222,6 +234,14 @@ class __$$HomeStateImplCopyWithImpl<$Res>
           ? _value._deliveryZone
           : deliveryZone // ignore: cast_nullable_to_non_nullable
               as List<LatLng>,
+      destinationLatLng: freezed == destinationLatLng
+          ? _value.destinationLatLng
+          : destinationLatLng // ignore: cast_nullable_to_non_nullable
+              as LatLng?,
+      destinationMarker: freezed == destinationMarker
+          ? _value.destinationMarker
+          : destinationMarker // ignore: cast_nullable_to_non_nullable
+              as Marker?,
     ));
   }
 }
@@ -240,7 +260,9 @@ class _$HomeStateImpl extends _HomeState {
       this.orderDetail = null,
       this.parcelDetail = null,
       final Set<Polygon> polygon = const {},
-      final List<LatLng> deliveryZone = const []})
+      final List<LatLng> deliveryZone = const [],
+      this.destinationLatLng = null,
+      this.destinationMarker = null})
       : _polylineCoordinates = polylineCoordinates,
         _endPolylineCoordinates = endPolylineCoordinates,
         _markers = markers,
@@ -314,8 +336,15 @@ class _$HomeStateImpl extends _HomeState {
   }
 
   @override
+  @JsonKey()
+  final LatLng? destinationLatLng;
+  @override
+  @JsonKey()
+  final Marker? destinationMarker;
+
+  @override
   String toString() {
-    return 'HomeState(isLoading: $isLoading, isGoUser: $isGoUser, isGoRestaurant: $isGoRestaurant, isScrolling: $isScrolling, polylineCoordinates: $polylineCoordinates, endPolylineCoordinates: $endPolylineCoordinates, markers: $markers, orderDetail: $orderDetail, parcelDetail: $parcelDetail, polygon: $polygon, deliveryZone: $deliveryZone)';
+    return 'HomeState(isLoading: $isLoading, isGoUser: $isGoUser, isGoRestaurant: $isGoRestaurant, isScrolling: $isScrolling, polylineCoordinates: $polylineCoordinates, endPolylineCoordinates: $endPolylineCoordinates, markers: $markers, orderDetail: $orderDetail, parcelDetail: $parcelDetail, polygon: $polygon, deliveryZone: $deliveryZone, destinationLatLng: $destinationLatLng, destinationMarker: $destinationMarker)';
   }
 
   @override
@@ -342,7 +371,11 @@ class _$HomeStateImpl extends _HomeState {
                 other.parcelDetail == parcelDetail) &&
             const DeepCollectionEquality().equals(other._polygon, _polygon) &&
             const DeepCollectionEquality()
-                .equals(other._deliveryZone, _deliveryZone));
+                .equals(other._deliveryZone, _deliveryZone) &&
+            (identical(other.destinationLatLng, destinationLatLng) ||
+                other.destinationLatLng == destinationLatLng) &&
+            (identical(other.destinationMarker, destinationMarker) ||
+                other.destinationMarker == destinationMarker));
   }
 
   @override
@@ -358,11 +391,11 @@ class _$HomeStateImpl extends _HomeState {
       orderDetail,
       parcelDetail,
       const DeepCollectionEquality().hash(_polygon),
-      const DeepCollectionEquality().hash(_deliveryZone));
+      const DeepCollectionEquality().hash(_deliveryZone),
+      destinationLatLng,
+      destinationMarker);
 
-  /// Create a copy of HomeState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
   _$$HomeStateImplCopyWith<_$HomeStateImpl> get copyWith =>
@@ -381,7 +414,9 @@ abstract class _HomeState extends HomeState {
       final OrderDetailData? orderDetail,
       final ParcelOrder? parcelDetail,
       final Set<Polygon> polygon,
-      final List<LatLng> deliveryZone}) = _$HomeStateImpl;
+      final List<LatLng> deliveryZone,
+      final LatLng? destinationLatLng,
+      final Marker? destinationMarker}) = _$HomeStateImpl;
   const _HomeState._() : super._();
 
   @override
@@ -406,11 +441,12 @@ abstract class _HomeState extends HomeState {
   Set<Polygon> get polygon;
   @override
   List<LatLng> get deliveryZone;
-
-  /// Create a copy of HomeState
-  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
+  LatLng? get destinationLatLng;
+  @override
+  Marker? get destinationMarker;
+  @override
+  @JsonKey(ignore: true)
   _$$HomeStateImplCopyWith<_$HomeStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
