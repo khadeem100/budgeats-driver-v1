@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:driver/presentation/component/platform_map_widget.dart';
 import 'package:driver/application/order/order_provider.dart';
 import 'package:driver/domain/di/dependency_manager.dart';
 import 'package:driver/infrastructure/models/data/order_detail.dart';
@@ -36,7 +37,7 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   final GeolocatorPlatform _geolocatorPlatform = GeolocatorPlatform.instance;
   final bool isLtr = LocalStorage.getLangLtr();
-  GoogleMapController? googleMapController;
+  PlatformMapController? mapController;
   BitmapDescriptor myIcon = BitmapDescriptor.defaultMarker;
   OrderDetailData? push;
   Timer? timer;
@@ -54,7 +55,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Future<void> setCustomMarkerIcon() async {
     final Uint8List markerMyIcon =
         await AppHelpers.getBytesFromAsset(AppAssets.pngMyLocation, 120);
-    myIcon = BitmapDescriptor.fromBytes(markerMyIcon);
+    myIcon = BitmapDescriptor.bytes(markerMyIcon);
   }
 
   checkPermission() async {
@@ -120,16 +121,22 @@ class _HomePageState extends ConsumerState<HomePage> {
         var loc = await Geolocator.getCurrentPosition();
         latLng = LatLng(loc.latitude, loc.longitude);
         LocalStorage.setAddressSelected(latLng);
-        googleMapController!
-            .animateCamera(CameraUpdate.newLatLngZoom(latLng, 15));
+        mapController?.animateCamera(
+          PlatformCameraUpdate.newLatLngZoom(
+            latitude: latLng.latitude, longitude: latLng.longitude, zoomLevel: 15,
+          ),
+        );
       }
     } else {
       if (check != LocationPermission.deniedForever) {
         var loc = await Geolocator.getCurrentPosition();
         latLng = LatLng(loc.latitude, loc.longitude);
         LocalStorage.setAddressSelected(latLng);
-        googleMapController!
-            .animateCamera(CameraUpdate.newLatLngZoom(latLng, 15));
+        mapController?.animateCamera(
+          PlatformCameraUpdate.newLatLngZoom(
+            latitude: latLng.latitude, longitude: latLng.longitude, zoomLevel: 15,
+          ),
+        );
       }
     }
   }
@@ -142,16 +149,22 @@ class _HomePageState extends ConsumerState<HomePage> {
         var loc = await Geolocator.getCurrentPosition();
         latLng = LatLng(loc.latitude, loc.longitude);
         LocalStorage.setAddressSelected(latLng);
-        googleMapController!
-            .animateCamera(CameraUpdate.newLatLngZoom(latLng, 15));
+        mapController?.animateCamera(
+          PlatformCameraUpdate.newLatLngZoom(
+            latitude: latLng.latitude, longitude: latLng.longitude, zoomLevel: 15,
+          ),
+        );
       }
     } else {
       if (check != LocationPermission.deniedForever) {
         var loc = await Geolocator.getCurrentPosition();
         latLng = LatLng(loc.latitude, loc.longitude);
         LocalStorage.setAddressSelected(latLng);
-        googleMapController!
-            .animateCamera(CameraUpdate.newLatLngZoom(latLng, 15));
+        mapController?.animateCamera(
+          PlatformCameraUpdate.newLatLngZoom(
+            latitude: latLng.latitude, longitude: latLng.longitude, zoomLevel: 15,
+          ),
+        );
       }
     }
   }
@@ -172,13 +185,15 @@ class _HomePageState extends ConsumerState<HomePage> {
               driverPosition: latLng,
             );
         // Follow driver position on the map during active delivery
-        if (googleMapController != null) {
-          googleMapController!.animateCamera(
-            CameraUpdate.newCameraPosition(
-              CameraPosition(target: latLng, zoom: 16, tilt: 45, bearing: currentLocation?.heading ?? 0),
-            ),
-          );
-        }
+        mapController?.animateCamera(
+          PlatformCameraUpdate.newCameraPosition(
+            latitude: latLng.latitude,
+            longitude: latLng.longitude,
+            zoomLevel: 16,
+            tiltValue: 45,
+            bearingValue: currentLocation?.heading ?? 0,
+          ),
+        );
       }
     });
   }
@@ -302,7 +317,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     timer?.cancel();
     routeUpdateTimer?.cancel();
     _positionSubscription?.cancel();
-    googleMapController?.dispose();
+    mapController?.dispose();
     super.dispose();
   }
 
@@ -447,21 +462,18 @@ class _HomePageState extends ConsumerState<HomePage> {
     return SizedBox(
       width: MediaQuery.sizeOf(context).width,
       height: MediaQuery.sizeOf(context).height,
-      child: GoogleMap(
-        myLocationButtonEnabled: false,
+      child: PlatformMapWidget(
+        initialLat: LocalStorage.getAddressSelected()?.latitude ??
+            AppConstants.demoLatitude,
+        initialLng: LocalStorage.getAddressSelected()?.longitude ??
+            AppConstants.demoLongitude,
+        zoom: 17,
+        tilt: isDeliveryActive ? 45 : 0,
+        bearing: 0,
         myLocationEnabled: isDeliveryActive,
-        initialCameraPosition: CameraPosition(
-          bearing: 0,
-          target: LatLng(
-            (LocalStorage.getAddressSelected()?.latitude ??
-                AppConstants.demoLatitude),
-            (LocalStorage.getAddressSelected()?.longitude ??
-                AppConstants.demoLongitude),
-          ),
-          tilt: isDeliveryActive ? 45 : 0,
-          zoom: 17,
-        ),
-        markers: {
+        compassEnabled: isDeliveryActive,
+        zoomControlsEnabled: false,
+        googleMarkers: {
           Marker(
             markerId: const MarkerId("source"),
             icon: myIcon,
@@ -473,14 +485,14 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           ...homeState.markers
         },
-        polygons: homeState.polygon,
-        polylines: isDeliveryActive
+        googlePolygons: homeState.polygon,
+        googlePolylines: isDeliveryActive
             ? {
                 if (homeState.endPolylineCoordinates.isNotEmpty)
                   Polyline(
                     polylineId: const PolylineId("startLocation"),
                     points: homeState.endPolylineCoordinates,
-                    color: _deliveryGreen.withOpacity(0.3),
+                    color: _deliveryGreen.withValues(alpha: 0.3),
                     width: 6,
                   ),
                 if (homeState.polylineCoordinates.isNotEmpty)
@@ -493,11 +505,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
               }
             : {},
-        mapToolbarEnabled: false,
-        zoomControlsEnabled: false,
-        compassEnabled: isDeliveryActive,
         onMapCreated: (controller) {
-          googleMapController = controller;
+          mapController = controller;
         },
         onCameraMoveStarted: () {
           if (!(LocalStorage.getUser()?.active ?? false)) {
@@ -522,7 +531,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   /// Fit the map camera to show both the driver and destination markers
   void _fitMapToRoute() {
-    if (googleMapController == null) return;
+    if (mapController == null) return;
     final state = ref.read(homeProvider);
     final coords = [
       LatLng(currentLocation?.latitude ?? latLng.latitude,
@@ -534,13 +543,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     double maxLat = coords.map((e) => e.latitude).reduce((a, b) => a > b ? a : b);
     double minLng = coords.map((e) => e.longitude).reduce((a, b) => a < b ? a : b);
     double maxLng = coords.map((e) => e.longitude).reduce((a, b) => a > b ? a : b);
-    googleMapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(
-        LatLngBounds(
-          southwest: LatLng(minLat, minLng),
-          northeast: LatLng(maxLat, maxLng),
-        ),
-        80,
+    mapController!.animateCamera(
+      PlatformCameraUpdate.newLatLngBounds(
+        southwestLat: minLat,
+        southwestLng: minLng,
+        northeastLat: maxLat,
+        northeastLng: maxLng,
+        padding: 80,
       ),
     );
   }
@@ -552,7 +561,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: Container(
           width: MediaQuery.sizeOf(context).width,
           height: MediaQuery.sizeOf(context).height,
-          color: Style.white.withOpacity(0.3),
+          color: Style.white.withValues(alpha: 0.3),
           child: const Loading()),
     );
   }
