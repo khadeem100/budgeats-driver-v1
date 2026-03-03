@@ -4,11 +4,11 @@ abstract class AppConstants {
   static const bool isDemo = false;
 
   /// api urls
-  static const String baseUrl = 'https://api.budgeats.nl/';
+  static const String baseUrl = 'https://api.trivena.cloud/';
   static const String drawingBaseUrl = 'https://api.openrouteservice.org';
   static const String googleApiKey = 'AIzaSyAo0EDk5sxDGBm7IXHDyEnNLVHIQtwsaRk';
-  static const String adminPageUrl = 'https://admin.budgeats.nl';
-  static const String webUrl = 'https://budgeats.nl';
+  static const String adminPageUrl = 'https://admin.trivena.cloud';
+  static const String webUrl = 'https://trivena.cloud';
   static const String routingKey =
       '5b3ce3597851110001cf62480384c1db92764d1b8959761ea2510ac8';
 
@@ -29,7 +29,7 @@ abstract class AppConstants {
   static const double pinLoadingMax = 0.611111111;
 
   /// demo app info
-  static const String demoSellerLogin = 'delivery@budgeats.nl';
+  static const String demoSellerLogin = 'delivery@trivena.cloud';
   static const String demoSellerPassword = 'budgeats123';
 }
 
