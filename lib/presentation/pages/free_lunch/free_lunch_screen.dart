@@ -185,7 +185,6 @@ class _FreeLunchScreenState extends ConsumerState<FreeLunchScreen> {
               ),
             ),
         ],
-        ],
       ),
     );
   }

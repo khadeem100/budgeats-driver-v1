@@ -161,3 +161,8 @@ class BarCodeScreen extends ConsumerWidget {
                     );
               },
             ),
+        ],
+      ),
+    );
+  }
+}

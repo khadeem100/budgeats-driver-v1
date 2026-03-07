@@ -21,8 +21,6 @@ class FinancesNotifier extends StateNotifier<FinancesState> {
     );
   }
 
-  final WithdrawalRepository _repo = WithdrawalRepository();
-
   Future<void> fetchBalance() async {
     state = state.copyWith(isLoadingBalance: true);
     final result = await _repo.getBalance();
