@@ -107,7 +107,7 @@ class _DeliverBottomSheetScreenState extends State<DeliverBottomSheetScreen> {
                     Expanded(
                       child: CustomButton(
                         title: AppHelpers.getTranslation(TrKeys.confirmation),
-                        onPressed: () {
+                        onPressed: () async {
                           final code = otpController.text.trim();
                           if (code.length != 4) {
                             setDialogState(() {
@@ -115,20 +115,26 @@ class _DeliverBottomSheetScreenState extends State<DeliverBottomSheetScreen> {
                             });
                             return;
                           }
+                          // Close the OTP dialog first
                           Navigator.pop(context);
-                          ref.read(homeProvider.notifier).deliveredFinish(
+                          // Await the API call
+                          final success = await ref.read(homeProvider.notifier).deliveredFinish(
                             context: context,
                             orderId: widget.order.id,
                             otp: code,
                           );
-                          Navigator.pop(context);
-                          AppHelpers.showCustomModalBottomSheet(
-                            context: context,
-                            modal: RateCustomer(
-                              order: widget.order,
-                            ),
-                            isDarkMode: false,
-                          );
+                          if (success && context.mounted) {
+                            // Close the delivery bottom sheet
+                            Navigator.pop(context);
+                            // Show rate customer screen
+                            AppHelpers.showCustomModalBottomSheet(
+                              context: context,
+                              modal: RateCustomer(
+                                order: widget.order,
+                              ),
+                              isDarkMode: false,
+                            );
+                          }
                         },
                       ),
                     ),

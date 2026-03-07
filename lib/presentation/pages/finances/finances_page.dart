@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:auto_route/annotations.dart';
@@ -21,6 +22,8 @@ class FinancesPage extends ConsumerStatefulWidget {
 }
 
 class _FinancesPageState extends ConsumerState<FinancesPage> {
+  Timer? _pollTimer;
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +31,19 @@ class _FinancesPageState extends ConsumerState<FinancesPage> {
       ref.read(financesProvider.notifier).fetchBalance();
       ref.read(financesProvider.notifier).fetchHistory();
     });
+    // Poll every 15 seconds for real-time status updates
+    _pollTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      if (mounted) {
+        ref.read(financesProvider.notifier).fetchBalance();
+        ref.read(financesProvider.notifier).fetchHistory();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
   }
 
   @override

@@ -414,21 +414,24 @@ class HomeNotifier extends StateNotifier<HomeState> {
     }
   }
 
-  Future<void> deliveredFinish(
+  Future<bool> deliveredFinish(
       {required BuildContext context, int? orderId, String? otp}) async {
-    state = state.copyWith(
-      isGoUser: false,
-      isGoRestaurant: false,
-      polylineCoordinates: [],
-      endPolylineCoordinates: [],
-      markers: {},
-      destinationLatLng: null,
-      destinationMarker: null,
-    );
     if (await AppConnectivity.connectivity()) {
       final response = await orderRepository.updateOrder(orderId ?? 0, "delivered", otp: otp);
+      bool success = false;
       response.when(
-        success: (data) {},
+        success: (data) {
+          success = true;
+          state = state.copyWith(
+            isGoUser: false,
+            isGoRestaurant: false,
+            polylineCoordinates: [],
+            endPolylineCoordinates: [],
+            markers: {},
+            destinationLatLng: null,
+            destinationMarker: null,
+          );
+        },
         failure: (failure, status) {
           if (context.mounted) {
             AppHelpers.showCheckTopSnackBar(
@@ -438,10 +441,12 @@ class HomeNotifier extends StateNotifier<HomeState> {
           }
         },
       );
+      return success;
     } else {
       if (context.mounted) {
         AppHelpers.showNoConnectionSnackBar(context);
       }
+      return false;
     }
   }
 

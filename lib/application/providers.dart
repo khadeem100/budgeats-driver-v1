@@ -13,3 +13,4 @@ export 'auth/reset_password/reset_password_provider.dart';
 export 'auth/sign_up/sign_up_provider.dart';
 export 'auth/login/languages/languages_provider.dart';
 export 'finances/finances_provider.dart';
+export 'free_lunch/free_lunch_provider.dart';

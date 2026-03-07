@@ -89,6 +89,11 @@ class _HomePageState extends ConsumerState<HomePage> {
               newOrder(s.data.data);
             },
             failure: (f) {});
+      } else if (message.data["type"] == "status_changed") {
+        // Withdrawal status changed — refresh balance and profile
+        ref.read(financesProvider.notifier).fetchBalance();
+        ref.read(financesProvider.notifier).fetchHistory();
+        ref.read(profileSettingsProvider.notifier).fetchProfileDetails(context: context);
       }
     });
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
@@ -110,6 +115,11 @@ class _HomePageState extends ConsumerState<HomePage> {
               newOrder(s.data.data);
             },
             failure: (f) {});
+      } else if (message.data["type"] == "status_changed") {
+        // Withdrawal status changed — refresh balance and profile
+        ref.read(financesProvider.notifier).fetchBalance();
+        ref.read(financesProvider.notifier).fetchHistory();
+        ref.read(profileSettingsProvider.notifier).fetchProfileDetails(context: context);
       }
     });
 

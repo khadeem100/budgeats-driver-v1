@@ -161,7 +161,7 @@ class TrKeys {
   static const String monthly = "Monthly";
   static const String weekly = "Weekly";
   static const String customerOrder = "Customer order";
-  static const String foodymanBenefit = "foodyman_benefit";
+  static const String foodymanBenefit = "Budgeats Benefit";
   static const String yourBenefit = "Your benefit";
   static const String thereAreOrders = "there_are";
   static const String setBusinessDay = "Set as a business day";

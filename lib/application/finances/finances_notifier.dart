@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:driver/domain/di/dependency_manager.dart';
 import 'package:driver/infrastructure/repositories/withdrawal_repository.dart';
 import 'package:driver/infrastructure/services/services.dart';
 import 'finances_state.dart';
 
 class FinancesNotifier extends StateNotifier<FinancesState> {
   FinancesNotifier() : super(const FinancesState());
+
+  final WithdrawalRepository _repo = WithdrawalRepository();
+
+  /// Refresh the user profile stored in LocalStorage so wallet balance is current everywhere
+  Future<void> _refreshUserProfile() async {
+    final response = await userRepository.getProfileDetails();
+    response.when(
+      success: (data) {
+        LocalStorage.setUser(data.data);
+      },
+      failure: (_, __) {},
+    );
+  }
 
   final WithdrawalRepository _repo = WithdrawalRepository();
 
@@ -69,6 +83,7 @@ class FinancesNotifier extends StateNotifier<FinancesState> {
         );
         fetchBalance();
         fetchHistory();
+        _refreshUserProfile();
       },
       failure: (error, statusCode) {
         state = state.copyWith(isWithdrawing: false);

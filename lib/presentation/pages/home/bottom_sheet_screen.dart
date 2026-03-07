@@ -132,7 +132,7 @@ class _BottomSheetScreenState extends State<BottomSheetScreen> {
                 SizedBox(
                   width: 60.w,
                   child: Text(
-                    AppHelpers.getTranslation(TrKeys.foodymanBenefit),
+                    'Budgeats Benefit',
                     style: Style.interNormal(size: 12.sp, letterSpacing: -0.3),
                     maxLines: 1,
                   ),
@@ -185,9 +185,11 @@ class _BottomSheetScreenState extends State<BottomSheetScreen> {
                   style: Style.interNormal(size: 12.sp, letterSpacing: -0.3),
                 ),
                 Consumer(builder: (context, ref, child) {
+                  final userData = ref.watch(profileSettingsProvider).userData;
+                  final walletPrice = userData?.wallet?.price ?? LocalStorage.getUser()?.wallet?.price;
                   return Text(
                     AppHelpers.numberFormat(
-                      number: LocalStorage.getUser()?.wallet?.price,
+                      number: walletPrice,
                       maxLength: 3
                     ),
                     style: Style.interSemi(size: 14.sp, letterSpacing: -0.3),
