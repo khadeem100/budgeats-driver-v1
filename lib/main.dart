@@ -12,6 +12,7 @@ import 'presentation/app_widget.dart';
 import 'presentation/styles/style.dart';
 import 'package:dio/dio.dart';
 import 'dart:async';
+import 'dart:io';
 
 const fetchBackground = "fetchBackground";
 
@@ -57,6 +58,27 @@ void main() async {
   await Firebase.initializeApp();
   await Workmanager().initialize(callbackDispatcher);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Ensure FCM auto-init is enabled so tokens are generated
+  await FirebaseMessaging.instance.setAutoInitEnabled(true);
+
+  // Create notification channel for Android 8+ via native platform
+  if (Platform.isAndroid) {
+    const platform = MethodChannel('nl.budgeats.driver/notifications');
+    try {
+      await platform.invokeMethod('createNotificationChannel', {
+        'id': 'high_importance_channel',
+        'name': 'Order Notifications',
+        'description': 'Notifications for new orders and delivery updates',
+        'importance': 4, // IMPORTANCE_HIGH
+      });
+    } catch (e) {
+      // Channel creation via method channel not available yet,
+      // FCM will use default channel
+      debugPrint('===> notification channel: $e');
+    }
+  }
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Style.transparent,

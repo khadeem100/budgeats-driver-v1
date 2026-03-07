@@ -289,6 +289,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     checkPermission();
     setCustomMarkerIcon();
     getMyLocation();
+    // Initialize FCM: register token + listen for refreshes on every app start
+    FcmService().initialize();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(profileSettingsProvider.notifier)
