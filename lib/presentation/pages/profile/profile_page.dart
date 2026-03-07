@@ -314,6 +314,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       context.pushRoute(const IncomeRoute());
                     },
                   ),
+                  SectionsItem(
+                    title: AppHelpers.getTranslation(TrKeys.finances),
+                    icon: FlutterRemix.wallet_3_line,
+                    onTap: () {
+                      context.pushRoute(const FinancesRoute());
+                    },
+                  ),
                   Consumer(
                     builder: (context, ref, child) {
                       return SectionsItem(

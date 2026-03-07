@@ -15,7 +15,7 @@ abstract class OrdersRepositoryFacade {
   Future<ApiResult<List<OrderDetailData>>> getHistoryOrders(int page,
       {DateTime? start, DateTime? end});
 
-  Future<ApiResult<dynamic>> updateOrder(int? orderId, String? status);
+  Future<ApiResult<dynamic>> updateOrder(int? orderId, String? status, {String? otp});
 
   Future<ApiResult<dynamic>> uploadImage(int? orderId, String? image);
 

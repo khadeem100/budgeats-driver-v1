@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:driver/infrastructure/models/data/order_detail.dart';
@@ -28,31 +29,116 @@ class _DeliverBottomSheetScreenState extends State<DeliverBottomSheetScreen> {
   final formKey = GlobalKey<FormState>();
 
   void _proceedWithDelivery(BuildContext context, WidgetRef ref) {
-    AppHelpers.openDialogImagePicker(
+    final otpController = TextEditingController();
+    String? otpError;
+    AppHelpers.showAlertDialog(
       context: context,
-      onSuccess: (path) async {
-        if (context.mounted) {
-          if (path.isNotEmpty) {
-            ref.read(homeProvider.notifier).uploadImage(
-              context: context,
-              orderId: widget.order.id,
-              path: path,
-            );
-          }
-          ref.read(homeProvider.notifier).deliveredFinish(
-            context: context,
-            orderId: widget.order.id,
-          );
-          Navigator.pop(context);
-          AppHelpers.showCustomModalBottomSheet(
-            context: context,
-            modal: RateCustomer(
-              order: widget.order,
+      child: StatefulBuilder(
+        builder: (context, setDialogState) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Style.white,
+              borderRadius: BorderRadius.circular(10.r),
             ),
-            isDarkMode: false,
+            padding: EdgeInsets.symmetric(vertical: 24.h, horizontal: 20.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.pin_outlined,
+                  size: 48.r,
+                  color: Style.primaryColor,
+                ),
+                12.verticalSpace,
+                Text(
+                  AppHelpers.getTranslation(TrKeys.enterDeliveryCode),
+                  style: Style.interSemi(size: 18.sp),
+                  textAlign: TextAlign.center,
+                ),
+                8.verticalSpace,
+                Text(
+                  AppHelpers.getTranslation(TrKeys.askCustomerForCode),
+                  style: Style.interNormal(size: 14.sp, color: Style.textGrey),
+                  textAlign: TextAlign.center,
+                ),
+                20.verticalSpace,
+                TextField(
+                  controller: otpController,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.center,
+                  maxLength: 4,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(4),
+                  ],
+                  style: Style.interSemi(size: 28.sp, letterSpacing: 12),
+                  decoration: InputDecoration(
+                    counterText: '',
+                    hintText: '• • • •',
+                    hintStyle: Style.interSemi(size: 28.sp, color: Style.textGrey, letterSpacing: 12),
+                    errorText: otpError,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                      borderSide: BorderSide(color: Style.borderColor),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                      borderSide: BorderSide(color: Style.primaryColor, width: 2),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                      borderSide: const BorderSide(color: Style.redColor, width: 2),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
+                  ),
+                ),
+                24.verticalSpace,
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomButton(
+                        title: AppHelpers.getTranslation(TrKeys.cancel),
+                        background: Style.greyColor,
+                        textColor: Style.black,
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                    10.horizontalSpace,
+                    Expanded(
+                      child: CustomButton(
+                        title: AppHelpers.getTranslation(TrKeys.confirmation),
+                        onPressed: () {
+                          final code = otpController.text.trim();
+                          if (code.length != 4) {
+                            setDialogState(() {
+                              otpError = AppHelpers.getTranslation(TrKeys.enterFourDigitCode);
+                            });
+                            return;
+                          }
+                          Navigator.pop(context);
+                          ref.read(homeProvider.notifier).deliveredFinish(
+                            context: context,
+                            orderId: widget.order.id,
+                            otp: code,
+                          );
+                          Navigator.pop(context);
+                          AppHelpers.showCustomModalBottomSheet(
+                            context: context,
+                            modal: RateCustomer(
+                              order: widget.order,
+                            ),
+                            isDarkMode: false,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           );
-        }
-      },
+        },
+      ),
     );
   }
 

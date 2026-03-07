@@ -415,7 +415,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
   }
 
   Future<void> deliveredFinish(
-      {required BuildContext context, int? orderId}) async {
+      {required BuildContext context, int? orderId, String? otp}) async {
     state = state.copyWith(
       isGoUser: false,
       isGoRestaurant: false,
@@ -426,7 +426,18 @@ class HomeNotifier extends StateNotifier<HomeState> {
       destinationMarker: null,
     );
     if (await AppConnectivity.connectivity()) {
-      orderRepository.updateOrder(orderId ?? 0, "delivered");
+      final response = await orderRepository.updateOrder(orderId ?? 0, "delivered", otp: otp);
+      response.when(
+        success: (data) {},
+        failure: (failure, status) {
+          if (context.mounted) {
+            AppHelpers.showCheckTopSnackBar(
+              context,
+              AppHelpers.getTranslation(failure),
+            );
+          }
+        },
+      );
     } else {
       if (context.mounted) {
         AppHelpers.showNoConnectionSnackBar(context);

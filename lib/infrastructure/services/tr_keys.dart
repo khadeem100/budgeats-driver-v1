@@ -260,4 +260,28 @@ class TrKeys {
   static const String ageVerificationMessage = 'this.order.contains.age.restricted.items.please.verify.customer.id.before.delivering';
   static const String customerIdVerified = 'customer.id.verified.18.plus';
   static const String customerIdNotVerified = 'customer.id.not.verified';
+
+  // OTP Delivery Confirmation
+  static const String enterDeliveryCode = 'enter.delivery.code';
+  static const String askCustomerForCode = 'ask.customer.for.4.digit.code';
+  static const String enterFourDigitCode = 'enter.4.digit.code';
+  static const String invalidDeliveryCode = 'invalid.delivery.code';
+
+  // Finances
+  static const String finances = 'finances';
+  static const String walletBalance = 'wallet.balance';
+  static const String withdrawFunds = 'withdraw.funds';
+  static const String withdrawalHistory = 'withdrawal.history';
+  static const String requestWithdrawal = 'request.withdrawal';
+  static const String bankAccount = 'bank.account';
+  static const String noBankAccount = 'no.bank.account.configured';
+  static const String withdrawalAmount = 'withdrawal.amount';
+  static const String withdrawAll = 'withdraw.all';
+  static const String withdrawalRequested = 'withdrawal.requested';
+  static const String withdrawalPending = 'withdrawal.pending';
+  static const String withdrawalCompleted = 'withdrawal.completed';
+  static const String withdrawalRejected = 'withdrawal.rejected';
+  static const String exchangeRate = 'exchange.rate';
+  static const String insufficientBalance = 'insufficient.balance';
+  static const String noWithdrawals = 'no.withdrawals.yet';
 }

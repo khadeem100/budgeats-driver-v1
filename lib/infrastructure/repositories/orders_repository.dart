@@ -163,12 +163,15 @@ class OrdersRepository implements OrdersRepositoryFacade {
   }
 
   @override
-  Future<ApiResult<dynamic>> updateOrder(int? orderId, String? status) async {
+  Future<ApiResult<dynamic>> updateOrder(int? orderId, String? status, {String? otp}) async {
     try {
       final client = dioHttp.client(requireAuth: true);
       await client.post(
         '/api/v1/dashboard/deliveryman/order/$orderId/status/update',
-        data: {"status": status},
+        data: {
+          "status": status,
+          if (otp != null) "otp": otp,
+        },
       );
       return const ApiResult.success(
         data: null,
