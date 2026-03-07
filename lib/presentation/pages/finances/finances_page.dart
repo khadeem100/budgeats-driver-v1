@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:auto_route/annotations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,7 +36,7 @@ class _FinancesPageState extends ConsumerState<FinancesPage> {
     final bool isLtr = LocalStorage.getLangLtr();
 
     return Directionality(
-      textDirection: isLtr ? TextDirection.ltr : TextDirection.rtl,
+      textDirection: isLtr ? ui.TextDirection.ltr : ui.TextDirection.rtl,
       child: Scaffold(
         backgroundColor: Style.greyColor,
         body: Column(
