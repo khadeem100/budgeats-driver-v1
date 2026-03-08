@@ -47,6 +47,25 @@ abstract class AuthRepository {
     required UserData user,
   });
 
+  Future<ApiResult<void>> signUpDriver({
+    required String email,
+    required String firstname,
+    String? lastname,
+    String? phone,
+    required String password,
+    String? referral,
+    required String typeOfTechnique,
+    required String brand,
+    required String model,
+    required String number,
+    required String color,
+    required String height,
+    required String weight,
+    required String length,
+    required String width,
+    String? imageUrl,
+  });
+
   Future<ApiResult<bool>>  checkPhone({required String phone});
 
 }

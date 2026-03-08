@@ -10,7 +10,7 @@ import 'package:driver/presentation/component/components.dart';
 import 'package:driver/application/providers.dart';
 import 'package:driver/infrastructure/services/services.dart';
 import 'package:driver/presentation/styles/style.dart';
-import 'register_page.dart';
+import 'driver_registration_page.dart';
 import 'reset/set_password_page.dart';
 
 class RegisterConfirmationPage extends ConsumerStatefulWidget {
@@ -58,8 +58,8 @@ class _RegisterConfirmationPageState
         Navigator.pop(context);
         AppHelpers.showCustomModalBottomSheetWithoutIosIcon(
           context: context,
-          modal: const RegisterPage(
-            isOnlyEmail: false,
+          modal: DriverRegistrationPage(
+            userModel: widget.userModel,
           ),
           isDarkMode: isDarkMode,
         );
@@ -82,7 +82,7 @@ class _RegisterConfirmationPageState
           child: Container(
             padding: MediaQuery.viewInsetsOf(context),
             decoration: BoxDecoration(
-                color: Style.greyColor.withOpacity(0.96),
+                color: Style.greyColor.withValues(alpha: 0.96),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(16.r),
                   topRight: Radius.circular(16.r),

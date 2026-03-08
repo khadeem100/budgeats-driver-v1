@@ -282,4 +282,94 @@ class SignUpNotifier extends StateNotifier<SignUpState> {
       }
     }
   }
+
+  Future<bool> registerDriver({
+    required BuildContext context,
+    required String email,
+    required String firstname,
+    required String lastname,
+    String? phone,
+    required String password,
+    required String confirmPassword,
+    required String typeOfTechnique,
+    required String brand,
+    required String model,
+    required String number,
+    required String color,
+    required String height,
+    required String weight,
+    required String length,
+    required String width,
+    String? imageUrl,
+  }) async {
+    final connected = await AppConnectivity.connectivity();
+
+    if (!context.mounted) {
+      return false;
+    }
+
+    if (!connected) {
+      if (context.mounted) {
+        AppHelpers.showNoConnectionSnackBar(context);
+      }
+      return false;
+    }
+
+    if (firstname.trim().isEmpty) {
+      state = state.copyWith(isFirstNameInvalid: true);
+      return false;
+    }
+
+    if (!AppValidators.isValidPassword(password)) {
+      state = state.copyWith(isPasswordInvalid: true);
+      return false;
+    }
+
+    if (!AppValidators.isValidConfirmPassword(password, confirmPassword)) {
+      state = state.copyWith(isConfirmPasswordInvalid: true);
+      return false;
+    }
+
+    if ([typeOfTechnique, brand, model, number, color, height, weight, length, width]
+        .any((item) => item.trim().isEmpty)) {
+      AppHelpers.showCheckTopSnackBar(
+        context,
+        'Please complete all driver and vehicle details.',
+      );
+      return false;
+    }
+
+    state = state.copyWith(isLoading: true);
+
+    final response = await _authRepository.signUpDriver(
+      email: email,
+      firstname: firstname.trim(),
+      lastname: lastname.trim().isEmpty ? null : lastname.trim(),
+      phone: phone,
+      password: password,
+      referral: state.referral,
+      typeOfTechnique: typeOfTechnique,
+      brand: brand.trim(),
+      model: model.trim(),
+      number: number.trim(),
+      color: color.trim(),
+      height: height.trim(),
+      weight: weight.trim(),
+      length: length.trim(),
+      width: width.trim(),
+      imageUrl: imageUrl,
+    );
+
+    return response.when(
+      success: (_) {
+        state = state.copyWith(isLoading: false);
+        return true;
+      },
+      failure: (failure, status) {
+        state = state.copyWith(isLoading: false);
+        AppHelpers.showCheckTopSnackBar(context, failure.toString());
+        return false;
+      },
+    );
+  }
 }

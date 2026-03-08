@@ -214,6 +214,61 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<ApiResult<void>> signUpDriver({
+    required String email,
+    required String firstname,
+    String? lastname,
+    String? phone,
+    required String password,
+    String? referral,
+    required String typeOfTechnique,
+    required String brand,
+    required String model,
+    required String number,
+    required String color,
+    required String height,
+    required String weight,
+    required String length,
+    required String width,
+    String? imageUrl,
+  }) async {
+    final data = {
+      'role': 'deliveryman',
+      'email': email,
+      'firstname': firstname,
+      if (lastname?.isNotEmpty ?? false) 'lastname': lastname,
+      if (phone?.isNotEmpty ?? false) 'phone': phone?.replaceAll('+', ''),
+      'password': password,
+      if (referral?.isNotEmpty ?? false) 'referral': referral,
+      'type_of_technique': typeOfTechnique,
+      'brand': brand,
+      'model': model,
+      'number': number,
+      'color': color,
+      'height': int.tryParse(height) ?? 0,
+      'width': int.tryParse(width) ?? 0,
+      'length': int.tryParse(length) ?? 0,
+      'kg': int.tryParse(weight) ?? 0,
+      if (imageUrl != null) 'images': [imageUrl],
+    };
+
+    try {
+      final client = dioHttp.client(requireAuth: false);
+      await client.post(
+        '/api/v1/auth/after-verify',
+        data: data,
+      );
+
+      return const ApiResult.success(data: null);
+    } catch (e) {
+      return ApiResult.failure(
+        error: AppHelpers.errorHandler(e),
+        statusCode: NetworkExceptions.getDioStatus(e),
+      );
+    }
+  }
+
+  @override
   Future<ApiResult<VerifyData>> sigUpWithPhone({required UserData user}) async {
     final data = {
       "firstname": user.firstname,
