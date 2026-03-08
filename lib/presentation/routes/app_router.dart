@@ -20,6 +20,7 @@ class AppRouter extends RootStackRouter {
     CupertinoRoute(path: '/parcels', page: ParcelsRoute.page),
     CupertinoRoute(path: '/become-driver', page: BecomeDriverRoute.page),
     CupertinoRoute(path: '/delivery-zone', page: DeliveryZoneRoute.page),
+    CupertinoRoute(path: '/driver-chat', page: DriverChatRoute.page),
     CupertinoRoute(path: '/finances', page: FinancesRoute.page),
   ];
 

@@ -19,6 +19,7 @@ Future<void> setUpDependencies() async {
   getIt.registerSingleton<HttpService>(HttpService());
   getIt.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
   getIt.registerSingleton<AuthRepository>(AuthRepositoryImpl());
+  getIt.registerSingleton<DriverChatRepositoryFacade>(DriverChatRepositoryImpl());
   getIt.registerSingleton<UserRepository>(UserRepositoryImpl());
   getIt.registerSingleton<DrawRepository>(DrawRepositoryImpl());
   getIt.registerSingleton<OrdersRepositoryFacade>(OrdersRepository());
@@ -31,6 +32,7 @@ Future<void> setUpDependencies() async {
 final dioHttp = getIt.get<HttpService>();
 final settingsRepository = getIt.get<SettingsRepository>();
 final authRepository = getIt.get<AuthRepository>();
+final driverChatRepository = getIt.get<DriverChatRepositoryFacade>();
 final userRepository = getIt.get<UserRepository>();
 final drawRepository = getIt.get<DrawRepository>();
 final orderRepository = getIt.get<OrdersRepositoryFacade>();

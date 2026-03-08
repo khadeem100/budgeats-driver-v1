@@ -312,6 +312,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         context.pushRoute(const NotificationListRoute()),
                   ),
                   SectionsItem(
+                    title: 'Drivers Chat',
+                    icon: FlutterRemix.chat_1_line,
+                    onTap: () {
+                      context.pushRoute(const DriverChatRoute());
+                    },
+                  ),
+                  SectionsItem(
                     title: AppHelpers.getTranslation(TrKeys.orderHistory),
                     icon: FlutterRemix.history_line,
                     onTap: () {

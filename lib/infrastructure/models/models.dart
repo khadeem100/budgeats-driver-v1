@@ -1,5 +1,6 @@
 export 'data/chart.dart';
 export 'data/user_data.dart';
+export 'data/driver_chat_message.dart';
 export 'response/login_response.dart';
 export 'response/profile_response.dart';
 export 'response/register_response.dart';
@@ -18,6 +19,7 @@ export 'data/setting.dart';
 export 'response/currencies_response.dart';
 export 'response/gallery_upload_response.dart';
 export 'response/driver_show_response.dart';
+export 'response/driver_chat_overview_response.dart';
 export 'data/request_model_data.dart';
 export 'response/statistics_response.dart';
 export 'response/notification_response.dart';
