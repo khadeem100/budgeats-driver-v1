@@ -27,3 +27,5 @@ export 'response/request_model_response.dart';
 export 'response/delivery_zone_paginate.dart';
 export 'response/statistics_income_response.dart';
 export 'response/statistics_order_response.dart';
+export 'data/wallet_history_data.dart';
+export 'response/wallet_history_response.dart';

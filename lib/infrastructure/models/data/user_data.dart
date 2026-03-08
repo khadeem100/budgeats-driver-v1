@@ -8,6 +8,10 @@ class UserData {
     String? uuid,
     String? firstname,
     String? lastname,
+    String? employeeNumber,
+    String? accountManagerName,
+    String? accountManagerPhone,
+    String? accountManagerEmail,
     String? email,
     String? phone,
     String? birthday,
@@ -30,6 +34,10 @@ class UserData {
     _uuid = uuid;
     _firstname = firstname;
     _lastname = lastname;
+    _employeeNumber = employeeNumber;
+    _accountManagerName = accountManagerName;
+    _accountManagerPhone = accountManagerPhone;
+    _accountManagerEmail = accountManagerEmail;
     _email = email;
     _phone = phone;
     _birthday = birthday;
@@ -54,6 +62,10 @@ class UserData {
     _uuid = json['uuid'];
     _firstname = json['firstname'];
     _lastname = json['lastname'];
+    _employeeNumber = json['employee_number'];
+    _accountManagerName = json['account_manager_name'];
+    _accountManagerPhone = json['account_manager_phone'];
+    _accountManagerEmail = json['account_manager_email'];
     _email = json['email'];
     _phone = json['phone'];
     _birthday = json['birthday'];
@@ -82,6 +94,10 @@ class UserData {
   String? _uuid;
   String? _firstname;
   String? _lastname;
+  String? _employeeNumber;
+  String? _accountManagerName;
+  String? _accountManagerPhone;
+  String? _accountManagerEmail;
   String? _email;
   String? _phone;
   String? _birthday;
@@ -105,6 +121,10 @@ class UserData {
     String? uuid,
     String? firstname,
     String? lastname,
+    String? employeeNumber,
+    String? accountManagerName,
+    String? accountManagerPhone,
+    String? accountManagerEmail,
     String? referral,
     String? email,
     String? phone,
@@ -128,6 +148,10 @@ class UserData {
         uuid: uuid ?? _uuid,
         firstname: firstname ?? _firstname,
         lastname: lastname ?? _lastname,
+        employeeNumber: employeeNumber ?? _employeeNumber,
+        accountManagerName: accountManagerName ?? _accountManagerName,
+        accountManagerPhone: accountManagerPhone ?? _accountManagerPhone,
+        accountManagerEmail: accountManagerEmail ?? _accountManagerEmail,
         email: email ?? _email,
         phone: phone ?? _phone,
         birthday: birthday ?? _birthday,
@@ -156,6 +180,14 @@ class UserData {
   String? get firstname => _firstname;
 
   String? get lastname => _lastname;
+
+  String? get employeeNumber => _employeeNumber;
+
+  String? get accountManagerName => _accountManagerName;
+
+  String? get accountManagerPhone => _accountManagerPhone;
+
+  String? get accountManagerEmail => _accountManagerEmail;
 
   String? get email => _email;
 
@@ -195,6 +227,10 @@ class UserData {
     map['uuid'] = _uuid;
     map['firstname'] = _firstname;
     map['lastname'] = _lastname;
+    map['employee_number'] = _employeeNumber;
+    map['account_manager_name'] = _accountManagerName;
+    map['account_manager_phone'] = _accountManagerPhone;
+    map['account_manager_email'] = _accountManagerEmail;
     map['email'] = _email;
     map['phone'] = _phone;
     map['birthday'] = _birthday;

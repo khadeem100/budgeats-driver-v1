@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:driver/application/statistics/statistics_provider.dart';
 import 'package:driver/application/statistics/statistics_state.dart';
+import 'package:driver/domain/di/dependency_manager.dart';
+import 'package:driver/infrastructure/models/models.dart';
 
 import 'package:driver/infrastructure/services/services.dart';
 import 'package:driver/presentation/component/components.dart';
@@ -23,6 +25,8 @@ class IncomePage extends ConsumerStatefulWidget {
 class _IncomePageState extends ConsumerState<IncomePage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isWalletLoading = true;
+  List<WalletHistoryData> _walletHistories = [];
 
   final _tabs = [
     Tab(
@@ -63,9 +67,37 @@ class _IncomePageState extends ConsumerState<IncomePage>
       (_) {
         ref.read(statisticsProvider.notifier).fetchStatistics(
             startTime: DateTime.now(), endTime: DateTime.now());
+        _fetchWalletHistories();
       },
     );
     super.initState();
+  }
+
+  Future<void> _fetchWalletHistories() async {
+    setState(() {
+      _isWalletLoading = true;
+    });
+
+    final response = await userRepository.getWalletHistories(perPage: 20);
+
+    response.when(
+      success: (data) {
+        if (mounted) {
+          setState(() {
+            _walletHistories = data.data;
+            _isWalletLoading = false;
+          });
+        }
+      },
+      failure: (failure, status) {
+        if (mounted) {
+          setState(() {
+            _walletHistories = [];
+            _isWalletLoading = false;
+          });
+        }
+      },
+    );
   }
 
   @override
@@ -140,6 +172,10 @@ class _IncomePageState extends ConsumerState<IncomePage>
                         "${LocalStorage.getUser()?.rate?.toStringAsFixed(1) ?? 0}",
                   ),
                   24.verticalSpace,
+                  TitleAndIcon(title: 'Wallet transactions'),
+                  12.verticalSpace,
+                  _buildWalletHistorySection(),
+                  24.verticalSpace,
                   // TitleAndIcon(
                   //   title: AppHelpers.getTranslation(TrKeys.payment),
                   // ),
@@ -201,6 +237,215 @@ class _IncomePageState extends ConsumerState<IncomePage>
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
       floatingActionButton: const PopButton(),
+    );
+  }
+
+  Widget _buildWalletHistorySection() {
+    if (_isWalletLoading) {
+      return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Style.white,
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        padding: EdgeInsets.all(20.r),
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_walletHistories.isEmpty) {
+      return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Style.white,
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        padding: EdgeInsets.all(20.r),
+        child: Text(
+          'No transactions yet',
+          style: Style.interNormal(size: 14.sp, color: Style.black),
+        ),
+      );
+    }
+
+    return Column(
+      children: _walletHistories
+          .map(
+            (item) => GestureDetector(
+              onTap: () => _showTransactionDetails(item),
+              child: Container(
+                margin: EdgeInsets.symmetric(vertical: 4.h),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+                decoration: BoxDecoration(
+                  color: Style.white,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      height: 42.r,
+                      width: 42.r,
+                      decoration: BoxDecoration(
+                        color: _isCredit(item)
+                            ? Style.primaryColor.withOpacity(0.12)
+                            : Colors.deepOrange.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                      child: Icon(
+                        _isCredit(item)
+                            ? Icons.south_west_rounded
+                            : Icons.north_east_rounded,
+                        color: _isCredit(item)
+                            ? Style.primaryColor
+                            : Colors.deepOrange,
+                      ),
+                    ),
+                    12.horizontalSpace,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _transactionTitle(item),
+                            style: Style.interSemi(size: 14.sp),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          4.verticalSpace,
+                          Text(
+                            item.createdAt ?? item.status ?? '',
+                            style: Style.interRegular(
+                              size: 12.sp,
+                              color: Style.textGrey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    8.horizontalSpace,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          _transactionAmount(item),
+                          style: Style.interSemi(
+                            size: 14.sp,
+                            color: _isCredit(item)
+                                ? Style.primaryColor
+                                : Colors.deepOrange,
+                          ),
+                        ),
+                        4.verticalSpace,
+                        Text(
+                          'View',
+                          style: Style.interRegular(
+                            size: 12.sp,
+                            color: Style.textGrey,
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  bool _isCredit(WalletHistoryData item) => item.type == 'topup';
+
+  String _transactionTitle(WalletHistoryData item) {
+    final note = item.note ?? '';
+
+    if (note.contains('Delivery earnings')) {
+      return 'Delivery earnings';
+    }
+
+    if (item.type == 'withdraw') {
+      return 'Withdrawal request';
+    }
+
+    return note.isNotEmpty ? note : 'Wallet transaction';
+  }
+
+  String _transactionAmount(WalletHistoryData item) {
+    final prefix = _isCredit(item) ? '+' : '-';
+    return '$prefix${AppHelpers.numberFormat(number: item.price ?? 0)}';
+  }
+
+  void _showTransactionDetails(WalletHistoryData item) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Style.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Style.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          padding: EdgeInsets.all(20.r),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Style.borderColor,
+                      borderRadius: BorderRadius.circular(100.r),
+                    ),
+                  ),
+                ),
+                20.verticalSpace,
+                Text(
+                  _transactionTitle(item),
+                  style: Style.interSemi(size: 18.sp),
+                ),
+                16.verticalSpace,
+                _detailRow('Amount', _transactionAmount(item)),
+                _detailRow('Status', item.status ?? 'unknown'),
+                _detailRow('Type', item.type ?? 'unknown'),
+                _detailRow('Created', item.createdAt ?? '-'),
+                _detailRow('Transaction ID', item.transactionId?.toString() ?? '-'),
+                _detailRow('Reference', item.uuid ?? '-'),
+                _detailRow('Note', item.note?.isNotEmpty == true ? item.note! : '-'),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 14.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 110.w,
+            child: Text(
+              label,
+              style: Style.interRegular(size: 13.sp, color: Style.textGrey),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: Style.interSemi(size: 13.sp, color: Style.black),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

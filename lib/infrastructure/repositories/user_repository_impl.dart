@@ -305,13 +305,36 @@ class UserRepositoryImpl implements UserRepository {
       };
       final client = dioHttp.client(requireAuth: true);
       final response = await client.get(
-          '/api/v1/dashboard/seller/orders/report/paginate',
+          '/api/v1/dashboard/deliveryman/orders/paginate',
           queryParameters: data);
       return ApiResult.success(
         data: StatisticsOrderResponse.fromJson(response.data),
       );
     } catch (e) {
       debugPrint('===> get statistics order error $e');
+      return ApiResult.failure(
+            error: AppHelpers.errorHandler(e),
+          statusCode: NetworkExceptions.getDioStatus(e));
+    }
+  }
+
+  @override
+  Future<ApiResult<WalletHistoryResponse>> getWalletHistories(
+      {int? page, int? perPage}) async {
+    try {
+      final client = dioHttp.client(requireAuth: true);
+      final response = await client.get(
+        '/api/v1/dashboard/user/wallet/histories',
+        queryParameters: {
+          'page': page ?? 1,
+          'perPage': perPage ?? 20,
+        },
+      );
+      return ApiResult.success(
+        data: WalletHistoryResponse.fromJson(response.data),
+      );
+    } catch (e) {
+      debugPrint('===> get wallet histories error $e');
       return ApiResult.failure(
             error: AppHelpers.errorHandler(e),
           statusCode: NetworkExceptions.getDioStatus(e));

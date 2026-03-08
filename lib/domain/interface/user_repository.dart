@@ -48,6 +48,11 @@ abstract class UserRepository {
   Future<ApiResult<StatisticsOrderResponse>> getStatisticsOrder(
       {DateTime? startTime, DateTime? endTime, int? page, int? perPage});
 
+  Future<ApiResult<WalletHistoryResponse>> getWalletHistories({
+    int? page,
+    int? perPage,
+  });
+
   Future<ApiResult<ProfileResponse>> getProfileDetails();
 
   Future<ApiResult<RequestModelResponse>> getRequestModel();

@@ -12,6 +12,7 @@ import 'package:driver/presentation/component/components.dart';
 import 'package:driver/presentation/routes/app_router.gr.dart';
 import 'package:driver/presentation/styles/style.dart';
 import '../auth/login/widgets/languages_modal.dart';
+import 'widgets/budgeats_driver_id_card.dart';
 import 'widgets/logout_modal.dart';
 import 'widgets/sections_item.dart';
 
@@ -25,6 +26,19 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   final bool isLtr = LocalStorage.getLangLtr();
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(profileSettingsProvider.notifier).fetchProfileDetails(
+            context: context,
+          );
+      ref.read(profileSettingsProvider.notifier).fetchProfileStatistics(
+            context: context,
+          );
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -247,6 +261,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         24.horizontalSpace
                       ],
                     ),
+                  ),
+                  16.verticalSpace,
+                  BudgeatsDriverIdCard(
+                    user: LocalStorage.getUser(),
                   ),
                   // _notifications(context),
                   20.verticalSpace,
