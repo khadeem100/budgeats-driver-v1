@@ -15,7 +15,8 @@ class DriverSchedulePage extends StatefulWidget {
   State<DriverSchedulePage> createState() => _DriverSchedulePageState();
 }
 
-class _DriverSchedulePageState extends State<DriverSchedulePage> {
+class _DriverSchedulePageState extends State<DriverSchedulePage>
+  with WidgetsBindingObserver {
   final bool isLtr = LocalStorage.getLangLtr();
   final intl.DateFormat _dateFormat = intl.DateFormat('EEE, dd MMM yyyy');
 
@@ -27,7 +28,21 @@ class _DriverSchedulePageState extends State<DriverSchedulePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _load();
+    }
   }
 
   Future<void> _load() async {

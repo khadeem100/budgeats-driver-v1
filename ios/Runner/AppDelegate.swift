@@ -4,9 +4,10 @@ import GoogleMaps
 import Firebase
 import FirebaseAuth
 import FirebaseMessaging
+import UserNotifications
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, MessagingDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
@@ -15,8 +16,10 @@ import FirebaseMessaging
     GMSServices.provideAPIKey("AIzaSyAo0EDk5sxDGBm7IXHDyEnNLVHIQtwsaRk")
     GeneratedPluginRegistrant.register(with: self)
     if #available(iOS 10.0, *) {
-      UNUserNotificationCenter.current().delegate = self as? UNUserNotificationCenterDelegate
+      UNUserNotificationCenter.current().delegate = self
     }
+    application.registerForRemoteNotifications()
+    Messaging.messaging().delegate = self
     if(!UserDefaults.standard.bool(forKey: "Notification")) {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         UserDefaults.standard.set(true, forKey: "Notification")
@@ -35,5 +38,14 @@ import FirebaseMessaging
               return
           }
       }
+
+        override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+          Messaging.messaging().apnsToken = deviceToken
+          super.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+        }
+
+        func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+          print("FCM registration token: \(fcmToken ?? \"nil\")")
+        }
 
 }
