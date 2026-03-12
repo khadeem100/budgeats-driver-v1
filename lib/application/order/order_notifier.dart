@@ -27,6 +27,34 @@ class OrderNotifier extends StateNotifier<OrderState> {
     state = state.copyWith(paymentType: isActive);
   }
 
+  void removeAvailableOrder(int orderId) {
+    state = state.copyWith(
+      availableOrders: state.availableOrders
+          .where((element) => element.id != orderId)
+          .toList(),
+    );
+  }
+
+  void upsertAvailableOrder(OrderDetailData order) {
+    final list = List<OrderDetailData>.from(state.availableOrders);
+    final index = list.indexWhere((element) => element.id == order.id);
+
+    if (index >= 0) {
+      list[index] = order;
+    } else {
+      list.insert(0, order);
+    }
+
+    state = state.copyWith(availableOrders: list);
+  }
+
+  void setAvailableOrders(List<OrderDetailData> orders) {
+    state = state.copyWith(
+      availableOrders: orders,
+      isAvailableLoading: false,
+    );
+  }
+
 
   Future<void> showOrder(BuildContext context,int orderId) async {
     final connected = await AppConnectivity.connectivity();
@@ -145,7 +173,7 @@ class OrderNotifier extends StateNotifier<OrderState> {
           );
         },
         failure: (failure, status) {
-          state = state.copyWith(isAvailableLoading: true);
+          state = state.copyWith(isAvailableLoading: false);
           AppHelpers.showCheckTopSnackBar(
             context,
             AppHelpers.getTranslation(failure),

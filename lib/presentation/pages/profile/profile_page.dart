@@ -12,6 +12,7 @@ import 'package:driver/presentation/component/components.dart';
 import 'package:driver/presentation/routes/app_router.gr.dart';
 import 'package:driver/presentation/styles/style.dart';
 import '../auth/login/widgets/languages_modal.dart';
+import 'driver_schedule_page.dart';
 import 'widgets/budgeats_driver_id_card.dart';
 import 'widgets/logout_modal.dart';
 import 'widgets/sections_item.dart';
@@ -289,6 +290,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       ref
                           .read(homeProvider.notifier)
                           .fetchDeliveryZone(isFetch: true);
+                    },
+                  ),
+                  SectionsItem(
+                    title: 'My schedule',
+                    icon: FlutterRemix.calendar_todo_line,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const DriverSchedulePage(),
+                        ),
+                      );
                     },
                   ),
                   SectionsItem(

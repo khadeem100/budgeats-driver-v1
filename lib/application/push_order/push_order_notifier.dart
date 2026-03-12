@@ -47,7 +47,7 @@ class PushOrderNotifier extends StateNotifier<PushOrderState> {
     return "$secondsStr s";
   }
 
-  changeLoading(){
-    state=state.copyWith(isLoading:!state.isLoading);
+  void setLoading(bool value) {
+    state = state.copyWith(isLoading: value);
   }
 }

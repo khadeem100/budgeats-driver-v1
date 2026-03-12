@@ -154,6 +154,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
       String? orderId,
       OrderDetailData? order,
       bool setOrder = false,
+      VoidCallback? onFailure,
       required VoidCallback onSuccess}) async {
     state = state.copyWith(isGoUser: false, isLoading: true);
     if (await AppConnectivity.connectivity()) {
@@ -170,6 +171,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
           },
           failure: (failure, status) {
             state = state.copyWith(isLoading: false);
+            onFailure?.call();
             AppHelpers.showCheckTopSnackBar(
               context,
               AppHelpers.getTranslation(failure),
@@ -182,6 +184,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
       }
     } else {
       state = state.copyWith(isLoading: false);
+      onFailure?.call();
       if (context.mounted) {
         AppHelpers.showNoConnectionSnackBar(context);
       }

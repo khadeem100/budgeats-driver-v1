@@ -74,6 +74,22 @@ class OrdersRepository implements OrdersRepositoryFacade {
   }
 
   @override
+  Future<ApiResult<void>> declineOrder(int orderId) async {
+    try {
+      final client = dioHttp.client(requireAuth: true);
+      await client.post(
+        '/api/v1/dashboard/deliveryman/order/$orderId/decline',
+      );
+      return const ApiResult.success(data: null);
+    } catch (e) {
+      debugPrint('==> decline order failure: $e');
+      return ApiResult.failure(
+          error: AppHelpers.errorHandler(e),
+          statusCode: NetworkExceptions.getDioStatus(e));
+    }
+  }
+
+  @override
   Future<ApiResult<OrderDetailModel>> showOrders(int id) async {
     final data = {
       'currency_id': LocalStorage.getSelectedCurrency()?.id,

@@ -17,7 +17,11 @@ class FcmService {
   /// Initialize FCM: request permissions, get token, listen for refresh.
   /// Call this once after Firebase.initializeApp() and after user is logged in.
   Future<void> initialize() async {
-    if (_initialized) return;
+    if (_initialized) {
+      await _registerToken();
+      return;
+    }
+
     _initialized = true;
 
     // Request notification permission (critical for Android 13+ and iOS)

@@ -6,6 +6,8 @@ import 'package:driver/domain/handlers/handlers.dart';
 abstract class OrdersRepositoryFacade {
   Future<ApiResult<OrderDetailModel>> showOrders(int id);
 
+  Future<ApiResult<void>> declineOrder(int orderId);
+
   Future<ApiResult<dynamic>> setCurrentOrder(int? orderId);
 
   Future<ApiResult<OrderPaginateResponse>> getActiveOrders(int page);

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_remix/flutter_remix.dart';
@@ -8,6 +10,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:intl/intl.dart' as intl;
 import 'package:driver/application/providers.dart';
+import 'package:driver/application/order/order_provider.dart';
+import 'package:driver/domain/di/dependency_manager.dart';
 import '../../../infrastructure/models/data/order_detail.dart';
 import 'package:driver/infrastructure/services/services.dart';
 import 'package:driver/presentation/component/components.dart';
@@ -28,25 +32,102 @@ class PushOrder extends ConsumerStatefulWidget {
 }
 
 class _PushOrderState extends ConsumerState<PushOrder> {
+  Timer? _availabilityTimer;
+  bool _dialogClosed = false;
+
   @override
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(pushOrderProvider.notifier).startTimer();
+      if (widget.isActive) {
+        _startAvailabilityWatcher();
+      }
     });
     super.initState();
   }
 
   @override
-  void deactivate() {
+  void dispose() {
     ref.read(pushOrderProvider.notifier).disposeTimer();
-    super.deactivate();
+    _availabilityTimer?.cancel();
+    super.dispose();
+  }
+
+  void _closeDialog({bool removeFromAvailable = false}) {
+    if (_dialogClosed || !mounted) {
+      return;
+    }
+
+    _dialogClosed = true;
+    _availabilityTimer?.cancel();
+    ref.read(pushOrderProvider.notifier).disposeTimer();
+
+    if (removeFromAvailable && widget.pushModel.id != null) {
+      ref.read(orderProvider.notifier).removeAvailableOrder(widget.pushModel.id!);
+    }
+
+    Navigator.of(context).pop();
+  }
+
+  void _startAvailabilityWatcher() {
+    _availabilityTimer?.cancel();
+    _availabilityTimer = Timer.periodic(const Duration(seconds: 4), (_) async {
+      final orderId = widget.pushModel.id;
+      if (orderId == null || !mounted) {
+        return;
+      }
+
+      final response = await orderRepository.showOrders(orderId);
+      response.when(
+        success: (data) {
+          final order = data.data;
+          final assigned = order?.deliveryman != null;
+          final closedStatus = ['canceled', 'cancelled', 'delivered', 'rejected', 'rejected_by_admin']
+              .contains((order?.status ?? '').toLowerCase());
+
+          if (assigned || closedStatus) {
+            _closeDialog(removeFromAvailable: true);
+          }
+        },
+        failure: (_, __) {
+          _closeDialog(removeFromAvailable: true);
+        },
+      );
+    });
+  }
+
+  Future<void> _declineOrder() async {
+    final orderId = widget.pushModel.id;
+    if (orderId == null) {
+      _closeDialog(removeFromAvailable: true);
+      return;
+    }
+
+    ref.read(pushOrderProvider.notifier).setLoading(true);
+
+    final response = await orderRepository.declineOrder(orderId);
+    response.when(
+      success: (_) {
+        ref.read(orderProvider.notifier).removeAvailableOrder(orderId);
+        _closeDialog(removeFromAvailable: false);
+      },
+      failure: (failure, __) {
+        if (mounted) {
+          AppHelpers.showCheckTopSnackBar(context, AppHelpers.getTranslation(failure));
+        }
+      },
+    );
+
+    if (mounted) {
+      ref.read(pushOrderProvider.notifier).setLoading(false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen(pushOrderProvider, (previous, next) {
       if (next.isTimeOut) {
-        Navigator.pop(context);
+        _closeDialog();
       }
     });
     final notifier = ref.read(pushOrderProvider.notifier);
@@ -121,12 +202,14 @@ class _PushOrderState extends ConsumerState<PushOrder> {
                       children: [
                         Expanded(
                           child: CustomButton(
-                            title: AppHelpers.getTranslation(TrKeys.skip),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
+                            isLoading: ref.watch(pushOrderProvider).isLoading,
+                            title: widget.isActive
+                              ? 'Deny'
+                                : AppHelpers.getTranslation(TrKeys.skip),
+                            onPressed: widget.isActive ? _declineOrder : () => _closeDialog(),
                             background: Style.transparent,
                             borderColor: Style.black,
+                            textColor: Style.black,
                           ),
                         ),
                         14.horizontalSpace,
@@ -141,15 +224,22 @@ class _PushOrderState extends ConsumerState<PushOrder> {
                                 if (widget.isActive) {
                                   final ImageCropperMarker image =
                                       ImageCropperMarker();
-                                  notifier.changeLoading();
+                                  notifier.setLoading(true);
                                   ref.read(homeProvider.notifier).goMarket(
                                       context: context,
                                       orderId: widget.pushModel.id.toString(),
                                       order: widget.pushModel,
                                       setOrder: true,
+                                      onFailure: () {
+                                        notifier.setLoading(false);
+                                      },
                                       onSuccess: () async {
-                                        notifier.changeLoading();
-                                        Navigator.pop(context);
+                                        notifier.setLoading(false);
+                                        if (widget.pushModel.id != null) {
+                                          ref.read(orderProvider.notifier).removeAvailableOrder(widget.pushModel.id!);
+                                          ref.read(orderProvider.notifier).fetchActiveOrders(context);
+                                        }
+                                        _closeDialog();
                                         ref
                                             .read(homeProvider.notifier)
                                             .getRoutingAll(
@@ -204,7 +294,7 @@ class _PushOrderState extends ConsumerState<PushOrder> {
                                             );
                                       });
                                 } else {
-                                  Navigator.pop(context);
+                                  _closeDialog();
                                 }
                               }),
                         )

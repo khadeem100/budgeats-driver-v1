@@ -51,6 +51,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   dynamic check;
   final _delayed = Delayed(milliseconds: 36000);
   StreamSubscription<Position>? _positionSubscription;
+  int? _activePopupOrderId;
+  bool _checkedInitialAvailableOrders = false;
 
   Future<void> setCustomMarkerIcon() async {
     final Uint8List markerMyIcon =
@@ -65,6 +67,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       badge: false,
     );
 
+    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      await _openOrderFromMessage(initialMessage);
+    }
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
       debugPrint("New notification on message: ${jsonEncode(message.data)}");
       if (message.data["id"] != null && mounted) {
@@ -73,22 +80,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           "${message.notification?.body}",
         );
       }
-      if (message.data["type"] == "new_order") {
-        final res = await orderRepository
-            .showOrders(int.tryParse(message.data["id"].toString()) ?? 0);
-        res.map(
-            success: (s) {
-              attachOrder(s.data.data);
-            },
-            failure: (f) {});
-      } else if (message.data["type"] == "deliveryman") {
-        final res = await orderRepository
-            .showOrders(int.tryParse(message.data["id"].toString()) ?? 0);
-        res.map(
-            success: (s) {
-              newOrder(s.data.data);
-            },
-            failure: (f) {});
+      if (message.data["type"] == "new_order" || message.data["type"] == "deliveryman") {
+        await _openOrderFromMessage(message);
       } else if (message.data["type"] == "status_changed") {
         // Withdrawal status changed — refresh balance and profile
         ref.read(financesProvider.notifier).fetchBalance();
@@ -99,22 +92,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       debugPrint("New notification oped app: ${jsonEncode(message.data)}");
 
-      if (message.data["type"] == "new_order") {
-        final res = await orderRepository
-            .showOrders(int.tryParse(message.data["id"].toString()) ?? 0);
-        res.map(
-            success: (s) {
-              attachOrder(s.data.data);
-            },
-            failure: (f) {});
-      } else if (message.data["type"] == "deliveryman") {
-        final res = await orderRepository
-            .showOrders(int.tryParse(message.data["id"].toString()) ?? 0);
-        res.map(
-            success: (s) {
-              newOrder(s.data.data);
-            },
-            failure: (f) {});
+      if (message.data["type"] == "new_order" || message.data["type"] == "deliveryman") {
+        await _openOrderFromMessage(message);
       } else if (message.data["type"] == "status_changed") {
         // Withdrawal status changed — refresh balance and profile
         ref.read(financesProvider.notifier).fetchBalance();
@@ -241,13 +220,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> attachOrder(OrderDetailData? push) async {
-    AppHelpers.showAlertDialog(
-      context: context,
-      child: PushOrder(
-        pushModel: push ?? OrderDetailData(),
-        isActive: false,
-      ),
-    );
+    _showPushPopup(push ?? OrderDetailData(), isActive: false);
     final ImageCropperMarker image = ImageCropperMarker();
     ref.read(homeProvider.notifier).goMarket(
         context: context,
@@ -285,12 +258,76 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> newOrder(OrderDetailData? push) async {
-    AppHelpers.showAlertDialog(
+    _showPushPopup(push ?? OrderDetailData(), isActive: true);
+  }
+
+  Future<void> _openOrderFromMessage(RemoteMessage message) async {
+    final orderId = int.tryParse(message.data['id']?.toString() ?? '');
+    if (orderId == null) {
+      return;
+    }
+
+    final res = await orderRepository.showOrders(orderId);
+    res.map(
+      success: (s) {
+        final order = s.data.data;
+        newOrder(order);
+      },
+      failure: (f) {},
+    );
+  }
+
+  void _showPushPopup(OrderDetailData order, {required bool isActive}) {
+    final orderId = order.id;
+    if (!mounted || orderId == null || _activePopupOrderId == orderId) {
+      return;
+    }
+
+    _activePopupOrderId = orderId;
+
+    showDialog(
       context: context,
-      child: PushOrder(
-        pushModel: push ?? OrderDetailData(),
-        isActive: true,
+      useSafeArea: false,
+      builder: (_) => Dialog(
+        backgroundColor: Style.transparent,
+        insetPadding: EdgeInsets.all(16.r),
+        child: PushOrder(
+          pushModel: order,
+          isActive: isActive,
+        ),
       ),
+    ).then((_) {
+      if (mounted && _activePopupOrderId == orderId) {
+        _activePopupOrderId = null;
+      }
+    });
+  }
+
+  Future<void> _showInitialAvailableOrderIfNeeded() async {
+    if (_checkedInitialAvailableOrders || !mounted) {
+      return;
+    }
+
+    _checkedInitialAvailableOrders = true;
+
+    if (!LocalStorage.getOnline()) {
+      return;
+    }
+
+    final homeState = ref.read(homeProvider);
+    if (homeState.isGoRestaurant || homeState.isGoUser) {
+      return;
+    }
+
+    final response = await orderRepository.getAvailableOrders(1);
+    response.when(
+      success: (data) {
+        ref.read(orderProvider.notifier).setAvailableOrders(data);
+        if (data.isNotEmpty) {
+          newOrder(data.first);
+        }
+      },
+      failure: (_, __) {},
     );
   }
 
@@ -309,7 +346,10 @@ class _HomePageState extends ConsumerState<HomePage> {
           .read(profileSettingsProvider.notifier)
           .fetchRequestResponse(context: context);
       ref.read(homeProvider.notifier).fetchCurrentOrder(context);
-      ref.read(orderProvider.notifier).fetchActiveOrders(context);
+      ref.read(orderProvider.notifier)
+        ..fetchActiveOrders(context)
+        ..fetchAvailableOrders(context);
+      Future.delayed(const Duration(milliseconds: 800), _showInitialAvailableOrderIfNeeded);
     });
     if (LocalStorage.getOnline()) {
       Workmanager().registerPeriodicTask(
