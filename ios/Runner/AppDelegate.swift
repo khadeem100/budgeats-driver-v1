@@ -45,7 +45,7 @@ import UserNotifications
         }
 
         func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
-          print("FCM registration token: \(fcmToken ?? \"nil\")")
+          print("FCM registration token: \(fcmToken ?? "nil")")
         }
 
 }
