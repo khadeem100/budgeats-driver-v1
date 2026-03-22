@@ -25,6 +25,7 @@ import 'package:driver/presentation/routes/app_router.gr.dart';
 import 'package:driver/presentation/styles/style.dart';
 import 'bottom_sheet_screen.dart';
 import 'delivery_bottom_sheet.dart';
+import 'package:driver/presentation/pages/push_order/push_order_slider.dart';
 
 @RoutePage()
 class HomePage extends ConsumerStatefulWidget {
@@ -51,8 +52,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   dynamic check;
   final _delayed = Delayed(milliseconds: 36000);
   StreamSubscription<Position>? _positionSubscription;
-  int? _activePopupOrderId;
   bool _checkedInitialAvailableOrders = false;
+
+  /// Pending push orders shown in the slider popup.
+  final ValueNotifier<List<OrderDetailData>> _pendingPushOrders = ValueNotifier([]);
+  bool _pushPopupShowing = false;
 
   Future<void> setCustomMarkerIcon() async {
     final Uint8List markerMyIcon =
@@ -220,45 +224,53 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> attachOrder(OrderDetailData? push) async {
-    _showPushPopup(push ?? OrderDetailData(), isActive: false);
-    final ImageCropperMarker image = ImageCropperMarker();
-    ref.read(homeProvider.notifier).goMarket(
-        context: context,
-        orderId: (push?.id ?? 0).toString(),
-        order: push,
-        onSuccess: () async {
-          ref.read(homeProvider.notifier).getRoutingAll(
-                // ignore: use_build_context_synchronously
-                context: context,
-                start: LatLng(
-                    LocalStorage.getAddressSelected()?.latitude ??
-                        AppConstants.demoLatitude,
-                    LocalStorage.getAddressSelected()?.longitude ??
-                        AppConstants.demoLongitude),
-                end: LatLng(
-                  double.parse(push?.shop?.location?.latitude ?? "0"),
-                  double.parse(push?.shop?.location?.longitude ?? "0"),
-                ),
-                market: Marker(
-                  markerId: const MarkerId("Shop"),
-                  position: LatLng(
-                    double.parse(push?.shop?.location?.latitude ?? "0"),
-                    double.parse(push?.shop?.location?.longitude ?? "0"),
-                  ),
-                  icon: await image.resizeAndCircle(
-                      push?.shop?.logoImg ?? "", 120),
-                  infoWindow: InfoWindow(
-                    title: push?.shop?.translation?.title ?? "Restaurant",
-                  ),
-                ),
-              );
-          // Zoom camera to show both driver and destination
-          _fitMapToRoute();
-        });
+    if (push == null) return;
+    newOrder(push);
   }
 
   Future<void> newOrder(OrderDetailData? push) async {
-    _showPushPopup(push ?? OrderDetailData(), isActive: true);
+    if (push == null || push.id == null) return;
+    // Don't show new orders while driver is on an active delivery
+    final homeState = ref.read(homeProvider);
+    if (homeState.isGoRestaurant || homeState.isGoUser) return;
+
+    // Add to pending list if not already there
+    final currentList = _pendingPushOrders.value;
+    if (currentList.any((o) => o.id == push.id)) return;
+
+    _pendingPushOrders.value = [...currentList, push];
+
+    // Show slider popup if not already showing
+    if (!_pushPopupShowing) {
+      _showPushSliderPopup();
+    }
+  }
+
+  void _showPushSliderPopup() {
+    if (!mounted || _pushPopupShowing) return;
+
+    _pushPopupShowing = true;
+
+    showDialog(
+      context: context,
+      useSafeArea: false,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        backgroundColor: Style.transparent,
+        insetPadding: EdgeInsets.all(16.r),
+        child: PushOrderSlider(
+          pendingOrders: _pendingPushOrders,
+          driverLocation: latLng,
+          onClose: () {
+            if (mounted && _pushPopupShowing) {
+              Navigator.of(context).pop();
+            }
+          },
+        ),
+      ),
+    ).then((_) {
+      _pushPopupShowing = false;
+    });
   }
 
   Future<void> _openOrderFromMessage(RemoteMessage message) async {
@@ -275,32 +287,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       },
       failure: (f) {},
     );
-  }
-
-  void _showPushPopup(OrderDetailData order, {required bool isActive}) {
-    final orderId = order.id;
-    if (!mounted || orderId == null || _activePopupOrderId == orderId) {
-      return;
-    }
-
-    _activePopupOrderId = orderId;
-
-    showDialog(
-      context: context,
-      useSafeArea: false,
-      builder: (_) => Dialog(
-        backgroundColor: Style.transparent,
-        insetPadding: EdgeInsets.all(16.r),
-        child: PushOrder(
-          pushModel: order,
-          isActive: isActive,
-        ),
-      ),
-    ).then((_) {
-      if (mounted && _activePopupOrderId == orderId) {
-        _activePopupOrderId = null;
-      }
-    });
   }
 
   Future<void> _showInitialAvailableOrderIfNeeded() async {
@@ -323,8 +309,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     response.when(
       success: (data) {
         ref.read(orderProvider.notifier).setAvailableOrders(data);
-        if (data.isNotEmpty) {
-          newOrder(data.first);
+        // Show all available orders in the slider
+        for (final order in data) {
+          newOrder(order);
         }
       },
       failure: (_, __) {},
@@ -369,6 +356,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     timer?.cancel();
     routeUpdateTimer?.cancel();
     _positionSubscription?.cancel();
+    _pendingPushOrders.dispose();
     mapController?.dispose();
     super.dispose();
   }

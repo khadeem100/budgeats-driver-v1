@@ -29,12 +29,13 @@ class _DeliverBottomSheetScreenState extends State<DeliverBottomSheetScreen> {
   final formKey = GlobalKey<FormState>();
 
   void _proceedWithDelivery(BuildContext context, WidgetRef ref) {
+    final outerContext = context;
     final otpController = TextEditingController();
     String? otpError;
     AppHelpers.showAlertDialog(
       context: context,
       child: StatefulBuilder(
-        builder: (context, setDialogState) {
+        builder: (dialogContext, setDialogState) {
           return Container(
             decoration: BoxDecoration(
               color: Style.white,
@@ -100,7 +101,7 @@ class _DeliverBottomSheetScreenState extends State<DeliverBottomSheetScreen> {
                         title: AppHelpers.getTranslation(TrKeys.cancel),
                         background: Style.greyColor,
                         textColor: Style.black,
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(dialogContext),
                       ),
                     ),
                     10.horizontalSpace,
@@ -116,19 +117,18 @@ class _DeliverBottomSheetScreenState extends State<DeliverBottomSheetScreen> {
                             return;
                           }
                           // Close the OTP dialog first
-                          Navigator.pop(context);
+                          Navigator.pop(dialogContext);
                           // Await the API call
                           final success = await ref.read(homeProvider.notifier).deliveredFinish(
-                            context: context,
+                            context: outerContext,
                             orderId: widget.order.id,
                             otp: code,
                           );
-                          if (success && context.mounted) {
-                            // Close the delivery bottom sheet
-                            Navigator.pop(context);
-                            // Show rate customer screen
+                          if (success && outerContext.mounted) {
+                            // State reset in deliveredFinish already removes the delivery bottom sheet
+                            // Show rate customer screen using the outer (still-mounted) context
                             AppHelpers.showCustomModalBottomSheet(
-                              context: context,
+                              context: outerContext,
                               modal: RateCustomer(
                                 order: widget.order,
                               ),
