@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,8 +15,45 @@ class HomeNotifier extends StateNotifier<HomeState> {
   HomeNotifier() : super(const HomeState());
   final ImageCropperMarker image = ImageCropperMarker();
 
+  /// Threshold in meters — if driver is farther than this from the route,
+  /// we consider them off-route and recalculate.
+  static const double _offRouteThresholdMeters = 50.0;
+
+  /// Minimum distance in meters from destination to stop rerouting.
+  static const double _arrivedThresholdMeters = 50.0;
+
+  /// Check if the driver is off the current route polyline.
+  bool _isOffRoute(LatLng driverPosition) {
+    final coords = state.polylineCoordinates;
+    if (coords.isEmpty) return true; // No route = definitely need one
+
+    double minDistance = double.infinity;
+    for (final point in coords) {
+      final d = _distanceMeters(driverPosition, point);
+      if (d < minDistance) {
+        minDistance = d;
+        if (d < _offRouteThresholdMeters) return false; // Close enough
+      }
+    }
+    return minDistance > _offRouteThresholdMeters;
+  }
+
+  /// Haversine distance in meters between two LatLng points.
+  static double _distanceMeters(LatLng a, LatLng b) {
+    const R = 6371000.0; // Earth radius in meters
+    final dLat = _deg2rad(b.latitude - a.latitude);
+    final dLng = _deg2rad(b.longitude - a.longitude);
+    final sinLat = sin(dLat / 2);
+    final sinLng = sin(dLng / 2);
+    final h = sinLat * sinLat +
+        cos(_deg2rad(a.latitude)) * cos(_deg2rad(b.latitude)) * sinLng * sinLng;
+    return 2 * R * asin(sqrt(h));
+  }
+
+  static double _deg2rad(double deg) => deg * (pi / 180);
+
   /// Update the live route from the driver's current position to the destination.
-  /// Called periodically (every 10s) while there's an active delivery.
+  /// Detects off-route and recalculates. Called periodically while delivering.
   Future<void> updateLiveRoute({
     required LatLng driverPosition,
   }) async {
@@ -25,6 +63,33 @@ class HomeNotifier extends StateNotifier<HomeState> {
     if (!state.isGoRestaurant && !state.isGoUser) return;
     if (!(await AppConnectivity.connectivity())) return;
 
+    // Check if driver has arrived at destination
+    final distToDest = _distanceMeters(driverPosition, dest);
+    if (distToDest < _arrivedThresholdMeters) {
+      // Close to destination - trim route to just show remaining
+      state = state.copyWith(
+        polylineCoordinates: [driverPosition, dest],
+        markers: {marker},
+      );
+      return;
+    }
+
+    // Only recalculate if off-route or no route exists
+    final offRoute = _isOffRoute(driverPosition);
+    if (!offRoute && state.polylineCoordinates.isNotEmpty) {
+      // On route - just trim the passed portion of the polyline
+      final trimmed = _trimPolyline(driverPosition, state.polylineCoordinates);
+      if (trimmed.isNotEmpty) {
+        state = state.copyWith(
+          polylineCoordinates: [driverPosition, ...trimmed],
+          markers: {marker},
+        );
+      }
+      return;
+    }
+
+    // Off-route or no route: fetch a new route from Google Directions
+    debugPrint('==> Rerouting: driver is off-route or no route exists');
     final response = await drawRepository.getRouting(
       start: driverPosition,
       end: dest,
@@ -36,15 +101,34 @@ class HomeNotifier extends StateNotifier<HomeState> {
         for (int i = 0; i < ls.length; i++) {
           list.add(LatLng(ls[i][1], ls[i][0]));
         }
-        state = state.copyWith(
-          polylineCoordinates: list,
-          markers: {marker},
-        );
+        if (list.isNotEmpty) {
+          state = state.copyWith(
+            polylineCoordinates: list,
+            markers: {marker},
+          );
+        }
       },
       failure: (failure, status) {
-        debugPrint('==> live route update failure: $failure');
+        debugPrint('==> reroute failure: $failure');
       },
     );
+  }
+
+  /// Trim the polyline by removing points the driver has already passed.
+  List<LatLng> _trimPolyline(LatLng driverPos, List<LatLng> polyline) {
+    if (polyline.isEmpty) return polyline;
+
+    int closestIndex = 0;
+    double closestDist = double.infinity;
+    for (int i = 0; i < polyline.length; i++) {
+      final d = _distanceMeters(driverPos, polyline[i]);
+      if (d < closestDist) {
+        closestDist = d;
+        closestIndex = i;
+      }
+    }
+    // Return from the closest point onwards
+    return polyline.sublist(closestIndex);
   }
 
   fetchDeliveryZone({bool isFetch = false}) async {
@@ -98,9 +182,17 @@ class HomeNotifier extends StateNotifier<HomeState> {
     required Marker market,
   }) async {
     if (await AppConnectivity.connectivity()) {
+      debugPrint('==> getRoutingAll: start=${start.latitude},${start.longitude} end=${end.latitude},${end.longitude}');
+
+      // Validate coordinates are not zero/default
+      if (end.latitude == 0 && end.longitude == 0) {
+        debugPrint('==> getRoutingAll: destination is 0,0 — skipping');
+        return;
+      }
+
       state = state.copyWith(
         polylineCoordinates: [],
-        markers: {},
+        markers: {market},
         isLoading: true,
         destinationLatLng: end,
         destinationMarker: market,
@@ -113,12 +205,17 @@ class HomeNotifier extends StateNotifier<HomeState> {
           for (int i = 0; i < ls.length; i++) {
             list.add(LatLng(ls[i][1], ls[i][0]));
           }
+          debugPrint('==> getRoutingAll: route has ${list.length} points');
           state = state.copyWith(
               polylineCoordinates: list, markers: {market}, isLoading: false);
         },
         failure: (failure, status) {
-          state = state
-              .copyWith(polylineCoordinates: [], markers: {}, isLoading: false);
+          debugPrint('==> getRoutingAll FAILED: $failure (status: $status)');
+          // Still show the marker even if route fails
+          state = state.copyWith(
+              polylineCoordinates: [],
+              markers: {market},
+              isLoading: false);
         },
       );
     } else {

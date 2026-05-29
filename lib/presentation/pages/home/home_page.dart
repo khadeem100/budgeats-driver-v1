@@ -170,8 +170,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             isOnline: (LocalStorage.getOnline()),
           );
     });
-    // Live route update every 15 seconds when there's an active delivery
-    routeUpdateTimer = Timer.periodic(const Duration(seconds: 15), (Timer t) {
+    // Live route update every 10 seconds when there's an active delivery
+    routeUpdateTimer = Timer.periodic(const Duration(seconds: 10), (Timer t) {
       final state = ref.read(homeProvider);
       if (state.isGoRestaurant || state.isGoUser) {
         ref.read(homeProvider.notifier).updateLiveRoute(
@@ -363,6 +363,16 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Listen for route changes to auto-fit the map camera
+    ref.listen<List<LatLng>>(
+      homeProvider.select((s) => s.polylineCoordinates),
+      (previous, next) {
+        if (next.isNotEmpty && (previous == null || previous.isEmpty)) {
+          // Route just appeared — zoom to fit
+          Future.delayed(const Duration(milliseconds: 300), _fitMapToRoute);
+        }
+      },
+    );
     return Directionality(
       textDirection: isLtr ? TextDirection.ltr : TextDirection.rtl,
       child: Scaffold(

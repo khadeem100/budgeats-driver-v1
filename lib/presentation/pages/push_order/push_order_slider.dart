@@ -328,6 +328,9 @@ class _PushOrderSliderState extends ConsumerState<PushOrderSlider> {
     if (orderId == null) return;
 
     final ImageCropperMarker image = ImageCropperMarker();
+    // Use actual driver location from the widget, not LocalStorage which may be stale
+    final driverLat = widget.driverLocation.latitude;
+    final driverLng = widget.driverLocation.longitude;
 
     ref.read(homeProvider.notifier).goMarket(
       context: context,
@@ -346,10 +349,7 @@ class _PushOrderSliderState extends ConsumerState<PushOrderSlider> {
         ref.read(homeProvider.notifier).getRoutingAll(
               // ignore: use_build_context_synchronously
               context: context,
-              start: LatLng(
-                LocalStorage.getAddressSelected()?.latitude ?? AppConstants.demoLatitude,
-                LocalStorage.getAddressSelected()?.longitude ?? AppConstants.demoLongitude,
-              ),
+              start: LatLng(driverLat, driverLng),
               end: LatLng(
                 double.parse(order.shop?.location?.latitude ?? "0"),
                 double.parse(order.shop?.location?.longitude ?? "0"),
